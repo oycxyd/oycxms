@@ -1,0 +1,125 @@
+function [varargout,Image]=component_analysis(input,p, dims)
+%% spectral umxing with component analysis (PCA or VCA) %%
+% input:
+
+%input = data ~ NxNy x Ns   i.e. Image of Nx x Ny pixels, each with Ns data
+%points in spectral domain
+
+%p=number of components, does not affect PCA, but changes endmember spectra
+%of VCA
+
+%dims=(Nx;Ny;)
+
+% *VCA is much faster ang generally yields better results, so pick VCA if
+% you have a rough of idea for p (number of components)
+
+stop=0;
+while stop ==0
+    answer = questdlg('select method', ...
+        'Question','PCA','VCA','Cancel');
+    switch answer
+        case 'PCA'
+            disp([answer ' performing PCA.'])
+            %%PCA
+            tic
+    %         [pc_dum,s,v,L,pr]=PCA(input);
+    % Output:
+    % pc, matrix, contains in columns Principal Components
+    % s, matrix, contains in columns normalized scores
+    % v, vector, with eigenvalues
+    % d, matrix, contains in columns loadings 
+    % pr, vector, % of explained data variance by each PC
+            [varargout{1},varargout{2},varargout{3},varargout{4},varargout{5}]=pca(input);
+            varargout{2}=varargout{2}';
+            toc
+            stop=1;
+        case 'VCA'
+            disp([answer ' performing VCA.'])
+            
+            %%VCA
+            tic
+    %         [M,Sest,Up,my,sing_values] = mvsa(input',p);
+    % M  =  [Lxp] estimated mixing matrix
+    %
+    % Sest = estimated abundance.
+    %
+    % Up =  [Lxp] isometric matrix spanning  the same subspace as M
+    %
+    % my =   mean value of y
+    %
+    % sing_values  = (p-1) eigenvalues of Cy = (y-my)*(y-my)/N. The dynamic range
+    %                  of these eigenvalues gives an idea of the  difficulty of the
+    %                  underlying problem
+            [varargout{1},varargout{2},varargout{3},varargout{4}] = mvsa(input',p, 'spherize', 'no');
+            toc
+            stop=1;
+        case 'Cancel'
+            disp([answer ' Aborted.'])
+    end
+end
+
+
+% recontruct images %
+answer = questdlg('show abundance images?', ...
+    'Question');
+switch answer
+    case 'Yes'
+        disp([answer ' OK.'])
+        xsize=dims(1);
+        ysize=dims(2);
+        scores=varargout{2};
+        for i=1:p
+            Image_dum=reshape(scores(i,:),[xsize, ysize]);
+            
+            %Brillouin
+%             Image_dum(:,2:2:end,i)=flipud(Image_dum(:,2:2:end,i));
+%             Image_dum=rot90(Image_dum(:,:,i));
+            
+%             MSI
+            Image_dum=rot90(Image_dum,-1);
+            Image_dum=fliplr(Image_dum);
+            Image(:,:,i) = Image_dum;
+            
+            
+            figure;imagesc(0:xsize,0:ysize,Image_dum);colorMap = jet(256);colormap(colorMap); colorbar;
+            title(num2str(['component ',num2str(i),' abundance']));
+            ax=gca;
+            ax.PlotBoxAspectRatio=[xsize ysize  1];
+        end
+    case 'No'
+        disp([answer ' OK.'])
+    case 'Cancel'
+        disp([answer ' Aborted.'])
+end
+% close all
+
+%% overlap with mask image (in progress)
+% figure;imshow(RGBImage);
+% hold on
+% maskimgplotR = cat(3,ones(size(RGBImage)),zeros(size(RGBImage)),ones(size(RGBImage)));
+% 
+% feature=727.53305877809;
+% for i=1:4
+%     [d1, f1] = min( abs(mz-feature) );
+%     eval(['ion_image',num2str(i),'=Data',num2str(i),'(:,f1);']);
+%     eval(['ion_image',num2str(i),'=reshape(ion_image',num2str(i),',[dims',num2str(i),'(1) dims',num2str(i),'(2)]);']);
+%     eval(['Image_dum=rot90(ion_image',num2str(i),',-1);']);
+% %     eval(['Image_dum=(ion_image',num2str(i),');']);
+%     Image_dum=fliplr(Image_dum);
+%     figure;imagesc(Image_dum);colorMap = jet(256);colormap(colorMap); colorbar;
+%     title(num2str(['Block',num2str(i),' ',num2str(feature)]));
+% %     saveas(gcf,['Block',num2str(i),'_',num2str(feature),'.png'])
+% end
+% 
+%  h = imagesc(maskimgplotR);
+%         set(h,'AlphaData',Image_dum)
+
+%% RGB image functions (in progress)
+% RGBImage=cat(3,vcimage(:,:,3).*mask,vcimage(:,:,2).*mask, vcimage(:,:,1).*mask);
+% % RGBImage=imfuse(vcimage(:,:,4).*mask,vcimage(:,:,6).*mask,'falsecolor','Scaling','joint','ColorChannels',[1 2 0]);
+% % RGBImage=imfuse(RGBImage,vcimage(:,:,1).*mask,'falsecolor','Scaling','independent','ColorChannels',[0 1 2]);
+% % % RGBImage=imfuse(RGBImage,vcimage(:,:,3),'falsecolor','Scaling','independent','ColorChannels',[2 1 2]);
+% % RGBImage=imfuse(RGBImage,vcimage(:,:,1),'diff','Scaling','independent');
+% RGBImage=fliplr(rot90((RGBImage),-1));
+% figure;imagesc(RGBImage)
+end

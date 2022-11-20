@@ -1,0 +1,129 @@
+%% using dtw to align (input is a cell of datasets to be aligned with their corresponding m/z vectors)
+
+function [data_aligned, mz_recal, I] = dtwa(varargin)    
+    datasets=varargin{1};
+    mzs= varargin{2};
+    if length(varargin)<3
+        method = 'mean_spec';
+    else
+        method = varargin{3};
+    end
+    
+    for i = 1:length(datasets)
+        lens(i) = size(datasets{i},2);
+    end
+    [~,I] = sort(lens,'descend');
+    datasets = datasets(I);
+    mzs = mzs(I);
+
+%% inter-data recalibration step (under development)
+%     threshold = 200;
+% %     mzs = {}; mzs{1}=mz1;mzs{2}=mz2;mzs{3}=mz3;mzs{4}=mz4;mzs{5}=mz51;
+% %     ms_references = zeros(length(mz_recal52),length(mzs)+1);
+%     ms_references = [];
+%     ms_references(:,1) = mz_recal;
+%     mzs_recal = {};
+%     for n = 1:length(mzs)
+% %     for n = 1:50
+%         disp(n)
+%         mz_raw = mzs{n};
+%         mz_new = MSrecal(mz_raw,references, 200);
+%         mzs_recal{n} = mz_new;
+%         for m = 1:length(ms_references)
+%                 [diff, ind] = min( abs(mz_new-ms_references(m,1)) );
+%     %             [diff, ind] = min( abs(mz_raw-ms_references(m,1)) );
+%                 ppm = diff/ms_references(m,1)*10^6;
+%                 if ppm <= threshold
+%                     ms_references(m,n+1) = ind;
+%                 else
+%                     ms_references(m,:)=0;
+%                 end
+%         end     
+%     end
+%     ms_references(ms_references(:,1)==0,:)=[];
+%     
+%     for i = 1:length(mzs_recal)
+% %     for i = 1:2
+%         dum = mzs_recal{i};
+%         dum(ms_references(:,i+1)) = ms_references(:,1);
+%         mzs_recal{i} = dum;
+%         clear dum
+%     end
+%% DTW-based alignment
+    data_aligned = {};
+    data1 = (datasets{1});
+    data_aligned{1} = data1;
+    mz_recal = mzs{1};
+%     mz_recal(ms_references(:,n+1))=ms_references(:,1);
+    for n = 1:length(datasets)-1
+        disp(['aligining file ',num2str(n)])
+        data2 = (datasets{n+1});
+        mz2 = mzs{n+1};
+        if strcmp(method,'mean_spec')
+            disp('aligning using mean spectra')
+            if size(data1,1) > 1
+                [~,i1,i2] = dtw(mean(data1), mean(data2),'symmkl');
+            else
+                [~,i1,i2] = dtw((data1), (data2),'symmkl');
+            end
+        else
+            disp('aligning using mz')
+            [~,i1,i2] = dtw(mz_recal, mz2,'symmkl');
+        end
+        data_dtw = [];
+        counter1 = parfor_wait(size(data2,1), 'Waitbar', true);
+        parfor i = 1:size(data2,1)
+            counter1.Send;
+            data_dtw(i,:) = async(data2(i,:),i2, i1);
+        end
+        data_aligned{n+1} = data_dtw;
+        clear data_dtw
+        counter1.Destroy
+    end
+    
+%% visualise results
+    answer = questdlg('Visualise results of alignment (using PCA)?', ...
+    'Question');
+        switch answer
+            case 'Yes'
+                disp([answer ' OK.'])
+                specs_aligned = [];
+                labels = {};
+                for m = 1:length(data_aligned)
+                    data_m = data_aligned{m};
+                    if length(data_aligned)> 5
+                        disp('a lot of data! taking 10% pixels per file only.')
+                        percentage = 10;
+                        sample_size = ceil(size(data_m,1)*percentage/100);
+                        idx = randi(sample_size,[1 sample_size]);
+                        data_m = data_m(idx,:);
+                        specs_aligned = cat(1,specs_aligned,data_m);
+                    else
+                        specs_aligned = cat(1,specs_aligned,data_aligned{m});
+                    end
+                    dum = {};
+                    for i = 1:size(data_m,1)
+                        dum{i}=['data',num2str(m)];
+                    end
+                    dum = dum';
+                    labels = cat(1,labels,dum);
+                    clear dum
+                end
+
+                [output] = component_analysis(log_trans(TIC_norm(specs_aligned)),3,[0 0]);
+                scores = output{2};
+                figure,gscatter(scores(1,:),scores(2,:),labels)   
+            case 'No'
+                disp([answer ' OK.'])
+            case 'Cancel'
+                disp([answer ' Aborted.'])  
+        end
+%     data_aligned = data_aligned(I);
+    % [~, ~,~,coefs]=peakfit([mz2 mz_recal],0,0,1,28,n,1,0,0,0,1);
+    % for p = 1:n+1
+    %     if p == 1
+    %         new_mz = coefs(end);
+    %     else
+    %         new_mz = new_mz + coefs(end-p+1)*mz_recal.^(p-1);
+    %     end
+    % end
