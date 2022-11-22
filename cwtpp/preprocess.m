@@ -78,7 +78,7 @@ tic
             h5write([filename,'/datacube.h5'],'/mz',global_mz)
             h5write([filename,'/datacube.h5'],'/dims',dims)
         else
-            delete datacube.h5
+            delete([filename,'/datacube.h5'])
             h5create([filename,'/datacube.h5'],'/datacube',size(specs_interp))
             h5create([filename,'/datacube.h5'],'/mz',size(global_mz));
             h5create([filename,'/datacube.h5'],'/dims',size(dims));
@@ -115,7 +115,7 @@ tic
                         h5write([filename,'/datacube_aligned.h5'],'/mz',mz_new)
                         h5write([filename,'/datacube_aligned.h5'],'/dims',dimes{I(i)})
                     else
-                        delete datacube_aligned.h5
+                        delete([filename,'/datacube_aligned.h5'])
                         h5create([filename,'/datacube_aligned.h5'],'/datacube',size(data_aligned{i}))
                         h5create([filename,'/datacube_aligned.h5'],'/mz',size(mz_new));
                         h5create([filename,'/datacube_aligned.h5'],'/dims',size(dimes{I(i)}));
