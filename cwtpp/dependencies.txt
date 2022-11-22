@@ -1,0 +1,24 @@
+'MATLAB'	'9.8'
+'Signal Processing Toolbox'	'8.4'
+'Statistics and Machine Learning Toolbox'	'11.7'
+'Wavelet Toolbox'	'5.4'
+'Parallel Computing Toolbox'	'7.2'
+
+
+D:\BOX\Box Sync\PhD\Brillouin\ENDO\data analysis\(pre)processing\DemoMVSA\VCA.m	
+D:\BOX\Box Sync\PhD\Brillouin\ENDO\data analysis\(pre)processing\DemoMVSA\computeAtransYinvLA.m	
+D:\BOX\Box Sync\PhD\Brillouin\ENDO\data analysis\(pre)processing\DemoMVSA\mvsa.m	
+D:\BOX\Box Sync\PhD\Brillouin\ENDO\data analysis\(pre)processing\DemoMVSA\quadProg1.m	
+D:\BOX\Box Sync\RA\codes\HBD workflow\component_analysis.m	
+D:\BOX\Box Sync\RA\codes\Imaging\DESI\TIC_norm.m	
+D:\BOX\Box Sync\RA\codes\Imaging\DESI\h5toMat.m	
+D:\BOX\Box Sync\RA\codes\Imaging\DESI\interpSpec.m	
+D:\BOX\Box Sync\RA\codes\Imaging\DESI\mstb-main\general\waters\get2Dcoord.m	
+D:\BOX\Box Sync\RA\codes\Imaging\DESI\mstb-main\general\waters\watersPackages.m	
+D:\BOX\Box Sync\RA\codes\Imaging\DESI\pre-processing\ALT\async.m	
+D:\BOX\Box Sync\RA\codes\Imaging\DESI\pre-processing\ALT\dtwa.m	
+D:\BOX\Box Sync\RA\codes\Imaging\DESI\pre-processing\ALT\preprocess.m	
+D:\BOX\Box Sync\RA\codes\useful tools\cwtpp.m	
+D:\BOX\Box Sync\RA\codes\useful tools\log_trans.m	
+D:\BOX\Box Sync\RA\codes\useful tools\parfor_wait.m	
+D:\BOX\Box Sync\RA\codes\useful tools\readraw2spec.m

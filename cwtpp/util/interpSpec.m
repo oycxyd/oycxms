@@ -1,0 +1,71 @@
+function [new_spectra]=interpSpec(varargin)
+%% interpSpec(specs, new_mz, old_mz, mask)
+    tic
+    specs = varargin{1};
+    num_spec = length(specs);
+    new_mz = varargin{2};
+    new_spectra = zeros(num_spec,length(new_mz));
+%     counter1 = waitbar(0,'Interpolating...');
+    if nargin <4
+        counter1 = parfor_wait(num_spec, 'Waitbar', true);
+        parfor i=1:num_spec
+%             disp(i)
+    %         waitbar(i/size, counter1);
+            counter1.Send; 
+            if iscell(specs)
+                dum=double(cell2mat(specs(i)));
+                old_mz = dum(1,:);
+                old_spectrum = dum(2,:);
+            else
+                old_mz = varargin{3};
+                old_spectrum = specs(i,:);
+            end
+            try
+                if length(old_mz) ~= length(new_mz)
+        %         if length(dum(:,1)) ~= length(new_mz)
+                        new_spectrum=interp1(old_mz,old_spectrum,new_mz);
+%                         new_spectrum=interp1(dum(1,:),dum(2,:), new_mz, 'spline');
+        %                 new_spectra=cat(2,new_spectra,new_spectrum);
+                        new_spectra(i,:) = new_spectrum;
+                else
+        %             new_spectrum=dum(:,2);
+                    new_spectrum=old_spectrum;
+        %             new_spectra=cat(2,new_spectra,new_spectrum);
+                    new_spectra(i,:) = new_spectrum;
+                end
+            catch
+                warning('Problem using function.  Assigning a value of 0.');
+                new_spectra(i,:) = zeros(1,length(new_mz));
+            end
+        end
+        counter1.Destroy
+    else
+%         counter1 = parfor_wait(num_spec, 'Waitbar', true);
+%         parfor i=1:num_spec
+%     %         waitbar(i/size, counter1);
+%             specs_filt = (specs(mask)
+%             counter1.Send; 
+%             dum=double(cell2mat(spec(i)));
+%             try
+%                 if length(dum(1,:)) ~= length(new_mz)
+%         %         if length(dum(:,1)) ~= length(new_mz)
+%     %                     new_spectrum=interp1(dum(1,:),dum(2,:),new_mz);
+%                         new_spectrum=interp1(dum(1,:),dum(2,:), new_mz, 'pchip');
+%         %                 new_spectra=cat(2,new_spectra,new_spectrum);
+%                         new_spectra(i,:) = (new_spectrum);
+%                 else
+%         %             new_spectrum=dum(:,2);
+%                     new_spectrum=dum(2,:);
+%         %             new_spectra=cat(2,new_spectra,new_spectrum);
+%                     new_spectra(i,:) = new_spectrum;
+%                 end
+%             catch
+%     %             warning('Problem using function.  Assigning a value of 0.');
+%                 new_spectra(i,:) = zeros(1,length(new_mz));
+%             end
+%         end
+%         counter1.Destroy
+    end
+%     close(counter1);
+    toc
+end
