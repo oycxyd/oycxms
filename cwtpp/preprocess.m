@@ -78,6 +78,10 @@ tic
             h5write([filename,'/datacube.h5'],'/mz',global_mz)
             h5write([filename,'/datacube.h5'],'/dims',dims)
         else
+            delete datacube.h5
+            h5create([filename,'/datacube.h5'],'/datacube',size(specs_interp))
+            h5create([filename,'/datacube.h5'],'/mz',size(global_mz));
+            h5create([filename,'/datacube.h5'],'/dims',size(dims));
             h5write([filename,'/datacube.h5'],'/datacube',specs_interp)
             h5write([filename,'/datacube.h5'],'/mz',global_mz)
             h5write([filename,'/datacube.h5'],'/dims',dims)
@@ -103,12 +107,22 @@ tic
                 for i = 1:length(filenames)
                     disp(i)
                     filename = filenames(I(i)).name;
-                    h5create([filename,'/datacube_aligned_new.h5'],'/datacube',size(data_aligned{i}))
-                    h5create([filename,'/datacube_aligned_new.h5'],'/mz',size(mz_new));
-                    h5create([filename,'/datacube_aligned_new.h5'],'/dims',size(dimes{I(i)}));
-                    h5write([filename,'/datacube_aligned_new.h5'],'/datacube',data_aligned{i})
-                    h5write([filename,'/datacube_aligned_new.h5'],'/mz',mz_new)
-                    h5write([filename,'/datacube_aligned_new.h5'],'/dims',dimes{I(i)})
+                    if isfile([filename,'/datacube_aligned.h5']) == 0
+                        h5create([filename,'/datacube_aligned.h5'],'/datacube',size(data_aligned{i}))
+                        h5create([filename,'/datacube_aligned.h5'],'/mz',size(mz_new));
+                        h5create([filename,'/datacube_aligned.h5'],'/dims',size(dimes{I(i)}));
+                        h5write([filename,'/datacube_aligned.h5'],'/datacube',data_aligned{i})
+                        h5write([filename,'/datacube_aligned.h5'],'/mz',mz_new)
+                        h5write([filename,'/datacube_aligned.h5'],'/dims',dimes{I(i)})
+                    else
+                        delete datacube_aligned.h5
+                        h5create([filename,'/datacube_aligned.h5'],'/datacube',size(data_aligned{i}))
+                        h5create([filename,'/datacube_aligned.h5'],'/mz',size(mz_new));
+                        h5create([filename,'/datacube_aligned.h5'],'/dims',size(dimes{I(i)}));
+                        h5write([filename,'/datacube_aligned.h5'],'/datacube',data_aligned{i})
+                        h5write([filename,'/datacube_aligned.h5'],'/mz',mz_new)
+                        h5write([filename,'/datacube_aligned.h5'],'/dims',dimes{I(i)})
+                    end
                 end
             case 'No'
                 disp([answer ' OK.'])

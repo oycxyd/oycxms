@@ -45,125 +45,129 @@ if raw_or_cell == 1
         [mz,spectrum,xy] = readraw2spec(filename,n);
         dims_x(n) = xy(1);
         dims_y(n) = xy(2);
-
-    %         scales = 1:2:32;
-        scales = 1:2:16;
-        cwttest = cwtft(spectrum,'scales',scales,'wavelet','mexh');% need to figure out scale for CWT
-        wcoefs = cwttest.cfs;
-            % wcoefs = cat(1,test(2,:),wcoefs);
-        % toc
-
-    %% crazy-climber/other max. finding
-    %     [rows,cols] = size(wcoefs);
-    %     Nparticles = floor(cols * rows/4); % number recommended by Zheng et al.
-        % its_per_stage = rows*4;
-    %     T0 = 500;
-    %     Tf = 5;
-    %     ite = 100;
-    %     T = [T0:(Tf-T0)/(ite-1):Tf];
-        % T = 500*[ones(1, its_per_stage)*1 ones(1, its_per_stage)*.1 ones(1, its_per_stage)*.01 ones(1, its_per_stage)*.001]; 
-        %not sure what this does, need to read about simulated annealing
-        % T = [500 400 300 200 100];
-        % T = [1000 800 600 400 200];
-        % ridgetable = CrazyClimber(wcoefs, T, Nparticles, 1);
-        % ridgetable = flipud(-ridgetable);
-        % figure,imagesc(ridgetable);colorMap = jet(256);colormap(colorMap); colorbar;
-        ridgetable = flipud(wcoefs);
-
-    % find local maxima for all levels
-        maxima = {};
-        % tic
-        % for i = 1:1
-        for i = 1:length(scales)
-            try
-        %     [pks,locs] = findpeaks(ridgetable(i,:),'MinPeakHeight',Imin,'MinPeakDistance',3);
-                [pks,locs] = findpeaks(ridgetable(i,:),'MinPeakProminence',Imin,'MinPeakDistance',3);
-                maxima{i} = cat(1,pks,locs);
-            catch
-                pks = 0; locs = 0;
-                maxima{i} = cat(1,pks,locs);
-            end
-        end
-        % toc
-
-    %% detect peaks from ridges
-    % initiliase ridges
-        % tic
-        ridges = {};
-        ridges_ini = maxima{1};
-        if isempty(ridges_ini)
-            list_of_peaks{n} = [mz; zeros(1,length(spectrum))];
+        if length(spectrum)< 5
+            list_of_peaks{n} = 0;
         else
-            for i = 1:size(ridges_ini,2)
-                ridges{i} = ridges_ini(:,i);
-            end
 
-            % search listing
-            % for i=2:8
-            for i=2:length(scales)-1
-                indices = [];
-            %     if G > 3
-            %         maxima_i = maxima{i};
-            %         for j=1:length(ridges)
-            %             ridge = ridges{j};
-            %             if length(ridge(ridge == 0))> 6
-            %                 ridges(j) = [];
-            %             else
-            %                 [val,ind]=min(abs(maxima_i(2,:)-ridge(2,end)));
-            %                 if abs(val)<=3
-            %                     ridges{j} = cat(2,ridge,maxima_i(:,ind));
-            %                     indices = [indices maxima_i(2,ind)];
-            %                 else
-            %                     ridges{j} = cat(2,ridge,zeros(2,1));
-            %                 end
-            %             end
-            %         end
-            %     else
-                    maxima_i = maxima{i};
-                    for j=1:length(ridges)
-                        ridge = ridges{j};
-                        [val,ind]=min(abs(maxima_i(2,:)-ridge(2,end)));
-                        if abs(val)<=3
-                            ridges{j} = cat(2,ridge,maxima_i(:,ind));
-                            indices = [indices maxima_i(2,ind)];
-                        else
-                            ridges{j} = cat(2,ridge,zeros(2,1));
-                        end
-                    end
-            %     end
-                [~,indices] = setdiff(maxima_i(2,:),indices);
-                new_ridges = maxima_i(:,indices);
-                if length(new_ridges) == 2
-                    ridges{end+1} = (new_ridges);
-                else
-                    for p = 1:length(new_ridges)
-                        ridges{end+1} = (new_ridges(:,p));
-                    end
+        %         scales = 1:2:32;
+            scales = 1:2:16;
+            cwttest = cwtft(spectrum,'scales',scales,'wavelet','mexh');% need to figure out scale for CWT
+            wcoefs = cwttest.cfs;
+                % wcoefs = cat(1,test(2,:),wcoefs);
+            % toc
+
+        %% crazy-climber/other max. finding
+        %     [rows,cols] = size(wcoefs);
+        %     Nparticles = floor(cols * rows/4); % number recommended by Zheng et al.
+            % its_per_stage = rows*4;
+        %     T0 = 500;
+        %     Tf = 5;
+        %     ite = 100;
+        %     T = [T0:(Tf-T0)/(ite-1):Tf];
+            % T = 500*[ones(1, its_per_stage)*1 ones(1, its_per_stage)*.1 ones(1, its_per_stage)*.01 ones(1, its_per_stage)*.001]; 
+            %not sure what this does, need to read about simulated annealing
+            % T = [500 400 300 200 100];
+            % T = [1000 800 600 400 200];
+            % ridgetable = CrazyClimber(wcoefs, T, Nparticles, 1);
+            % ridgetable = flipud(-ridgetable);
+            % figure,imagesc(ridgetable);colorMap = jet(256);colormap(colorMap); colorbar;
+            ridgetable = flipud(wcoefs);
+
+        % find local maxima for all levels
+            maxima = {};
+            % tic
+            % for i = 1:1
+            for i = 1:length(scales)
+                try
+            %     [pks,locs] = findpeaks(ridgetable(i,:),'MinPeakHeight',Imin,'MinPeakDistance',3);
+                    [pks,locs] = findpeaks(ridgetable(i,:),'MinPeakProminence',Imin,'MinPeakDistance',3);
+                    maxima{i} = cat(1,pks,locs);
+                catch
+                    pks = 0; locs = 0;
+                    maxima{i} = cat(1,pks,locs);
                 end
-            %     G = G+1;
             end
             % toc
 
+        %% detect peaks from ridges
+        % initiliase ridges
             % tic
-            % filtering & generate peak list
-            G = 3; %maximum gap between levels
-            L = 3; %minimun length of ridge
-            peaks = [];
-            for i = 1:length(ridges)
-
-                ridge = ridges{i};
-                if length(ridge(ridge == 0))>= G*2 || length(ridge) <= L
-                    ridges{i} = [];
-                else
-                    [~,max_ind] = max(abs(ridge(1,:)));
-                    peaks(:,i) = [mz(ridge(2,max_ind)); spectrum(ridge(2,max_ind))];
+            ridges = {};
+            ridges_ini = maxima{1};
+            if isempty(ridges_ini)
+                list_of_peaks{n} = [mz; zeros(1,length(spectrum))];
+            else
+                for i = 1:size(ridges_ini,2)
+                    ridges{i} = ridges_ini(:,i);
                 end
 
+                % search listing
+                % for i=2:8
+                for i=2:length(scales)-1
+                    indices = [];
+                %     if G > 3
+                %         maxima_i = maxima{i};
+                %         for j=1:length(ridges)
+                %             ridge = ridges{j};
+                %             if length(ridge(ridge == 0))> 6
+                %                 ridges(j) = [];
+                %             else
+                %                 [val,ind]=min(abs(maxima_i(2,:)-ridge(2,end)));
+                %                 if abs(val)<=3
+                %                     ridges{j} = cat(2,ridge,maxima_i(:,ind));
+                %                     indices = [indices maxima_i(2,ind)];
+                %                 else
+                %                     ridges{j} = cat(2,ridge,zeros(2,1));
+                %                 end
+                %             end
+                %         end
+                %     else
+                        maxima_i = maxima{i};
+                        for j=1:length(ridges)
+                            ridge = ridges{j};
+                            [val,ind]=min(abs(maxima_i(2,:)-ridge(2,end)));
+                            if abs(val)<=3
+                                ridges{j} = cat(2,ridge,maxima_i(:,ind));
+                                indices = [indices maxima_i(2,ind)];
+                            else
+                                ridges{j} = cat(2,ridge,zeros(2,1));
+                            end
+                        end
+                %     end
+                    [~,indices] = setdiff(maxima_i(2,:),indices);
+                    new_ridges = maxima_i(:,indices);
+                    if length(new_ridges) == 2
+                        ridges{end+1} = (new_ridges);
+                    else
+                        for p = 1:length(new_ridges)
+                            ridges{end+1} = (new_ridges(:,p));
+                        end
+                    end
+                %     G = G+1;
+                end
+                % toc
+
+                % tic
+                % filtering & generate peak list
+                G = 3; %maximum gap between levels
+                L = 3; %minimun length of ridge
+                peaks = [];
+                for i = 1:length(ridges)
+
+                    ridge = ridges{i};
+                    if length(ridge(ridge == 0))>= G*2 || length(ridge) <= L
+                        ridges{i} = [];
+                    else
+                        [~,max_ind] = max(abs(ridge(1,:)));
+                        peaks(:,i) = [mz(ridge(2,max_ind)); spectrum(ridge(2,max_ind))];
+                    end
+
+                end
+                [~,ia] = unique(peaks(1,:));
+                peaks = peaks(:,ia);
+                peaks(:,1)=[];
+                list_of_peaks{n} = peaks;
             end
-            [~,ia] = unique(peaks(1,:));
-            peaks = peaks(:,ia);
-            peaks(:,1)=[];
-            list_of_peaks{n} = peaks;
         end
     end
     try
@@ -183,14 +187,12 @@ else
     %     if raw_or_cell == 1
     %         [mz,spectrum] = readraw2spec(filename,n);
     %     end
-        dum = double(raw_specs{n});
-        if isempty(dum)
+        dum = (raw_specs{n});
+        if size(dum,2)< 5
             list_of_peaks{n} = 0;
         else
             mz = dum(1,:);
             spectrum = dum(2,:);
-        end
-
     %     if length(spectrum)< 100
     %         list_of_peaks{n} = 0;
     %     else
@@ -224,9 +226,14 @@ else
             % tic
             % for i = 1:1
             for i = 1:length(scales)
+                try
             %     [pks,locs] = findpeaks(ridgetable(i,:),'MinPeakHeight',Imin,'MinPeakDistance',3);
-                [pks,locs] = findpeaks(ridgetable(i,:),'MinPeakProminence',Imin,'MinPeakDistance',3);
-                maxima{i} = cat(1,pks,locs);
+                    [pks,locs] = findpeaks(ridgetable(i,:),'MinPeakProminence',Imin,'MinPeakDistance',3);
+                    maxima{i} = cat(1,pks,locs);
+                catch
+                    pks = 0; locs = 0;
+                    maxima{i} = cat(1,pks,locs);
+                end
             end
             % toc
 
@@ -305,11 +312,16 @@ else
                     end
 
                 end
-                [~,ia] = unique(peaks(1,:));
-                peaks = peaks(:,ia);
-                peaks(:,1)=[];
-                list_of_peaks{n} = peaks;
+                if isempty(peaks)
+                    list_of_peaks{n} = 0;
+                else
+                    [~,ia] = unique(peaks(1,:));
+                    peaks = peaks(:,ia);
+                    peaks(:,1)=[];
+                    list_of_peaks{n} = peaks;
+                end
             end
+        end
     end
     try
         dims = get2Dcoord((dims_x),(dims_y));
