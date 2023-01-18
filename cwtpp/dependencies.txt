@@ -22,3 +22,5 @@ D:\BOX\Box Sync\RA\codes\useful tools\cwtpp.m
 D:\BOX\Box Sync\RA\codes\useful tools\log_trans.m	
 D:\BOX\Box Sync\RA\codes\useful tools\parfor_wait.m	
 D:\BOX\Box Sync\RA\codes\useful tools\readraw2spec.m
+
+also need windows sdk 7!!
