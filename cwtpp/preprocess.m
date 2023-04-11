@@ -1,20 +1,17 @@
 %% new preprocessing workflow
+%% MAIN FUNCTION
 function [specs_interp, global_mz, cwtpeaks] = preprocess(varargin)
-clear vars
+
 tic
 %% load in raw data
     if isempty(varargin)
-        dname = uigetdir('D:\BOX\Box Sync\');
+        dname = uigetdir();
         %my dir, it will just go to root if this folder doesn't exist
         cd (dname);
-        filenames=dir('*.raw');
-
-%         filenames=specs(1).name;
-%         [specs_raw,~,~,xy2D] = desiReadRaw(filenames,0);
-%         dims = fliplr(size(xy2D));
+        filenames=[dir('*.raw');dir('*.imzml')];
     else
         filenames = varargin{1};
-        if isstring(filenames)
+        if ischar(filenames)
             filenames = cellstr(filenames);
         end
     end
@@ -42,49 +39,79 @@ tic
     try
         filename = filenames(n).name;
     catch
+        if iscell(filenames)
+            filenames = filenames{1};
+        end
         filename = filenames;
     end
     try
-        [cwtpeaks,dims] = cwtpp(filename);
-        save([filename,'\cwtpeaks'],'cwtpeaks')
+        [cwtpeaks,dims,mode] = cwtpp(filename);
         %% define a global axis (vector in HS data thats ~ mean/median)
         spectral_lens = [];
-        raw_specs = cwtpeaks;
-        for p =1:length(raw_specs)
-            spectral_lens(p) = length(cell2mat(raw_specs(p)));
+        specs = cwtpeaks;
+%         specs = raw_specs;
+        for p =1:length(specs)
+            spectral_lens(p) = length(cell2mat(specs(p)));
         end
         mean_length=max(spectral_lens);
+%         mean_length=median(spectral_lens);
         [~,ind1]=min(abs(spectral_lens-mean_length));
 
-        dum=(cell2mat(raw_specs(ind1)));
+        dum=(cell2mat(specs(ind1)));
         global_mz=dum(1,:);
         clear dum
 
 %% Interpolate all spectra to global axis
-        specs_interp=interpSpec(raw_specs,global_mz,length(raw_specs) );
+        specs_interp=interpSpec(specs,global_mz,length(specs) );
         specs_interp(isnan(specs_interp)|isinf(specs_interp))=0;
         % parallelised
 
-        % check mean spec
-        figure, stem(global_mz,mean(specs_interp),'Marker','none');
-        title(filename)
+        % check mean spec & TIC image
+        TIC_image = TICimg(specs_interp,dims,0);
+        figure
+        subplot(1,2,1);
+        imagesc(TIC_image);axis image;colormap('magma');
+        title('TIC image', 'Interpreter', 'none')
+        
+        subplot(1,2,2);
+        stem(global_mz,mean(specs_interp),'Marker','none');
+        title(filename, 'Interpreter', 'none')
     
 %% save datacube to h5
-        if isfile([filename,'/datacube.h5']) == 0
-            h5create([filename,'/datacube.h5'],'/datacube',size(specs_interp))
-            h5create([filename,'/datacube.h5'],'/mz',size(global_mz));
-            h5create([filename,'/datacube.h5'],'/dims',size(dims));
-            h5write([filename,'/datacube.h5'],'/datacube',specs_interp)
-            h5write([filename,'/datacube.h5'],'/mz',global_mz)
-            h5write([filename,'/datacube.h5'],'/dims',dims)
+        if strcmp(mode,'.raw')
+            if isfile([filename,'/datacube.h5']) == 0
+                h5create([filename,'/datacube.h5'],'/datacube',size(specs_interp))
+                h5create([filename,'/datacube.h5'],'/mz',size(global_mz));
+                h5create([filename,'/datacube.h5'],'/dims',size(dims));
+                h5write([filename,'/datacube.h5'],'/datacube',specs_interp)
+                h5write([filename,'/datacube.h5'],'/mz',global_mz)
+                h5write([filename,'/datacube.h5'],'/dims',dims)
+            else
+                delete([filename,'/datacube.h5'])
+                h5create([filename,'/datacube.h5'],'/datacube',size(specs_interp))
+                h5create([filename,'/datacube.h5'],'/mz',size(global_mz));
+                h5create([filename,'/datacube.h5'],'/dims',size(dims));
+                h5write([filename,'/datacube.h5'],'/datacube',specs_interp)
+                h5write([filename,'/datacube.h5'],'/mz',global_mz)
+                h5write([filename,'/datacube.h5'],'/dims',dims)
+            end
         else
-            delete([filename,'/datacube.h5'])
-            h5create([filename,'/datacube.h5'],'/datacube',size(specs_interp))
-            h5create([filename,'/datacube.h5'],'/mz',size(global_mz));
-            h5create([filename,'/datacube.h5'],'/dims',size(dims));
-            h5write([filename,'/datacube.h5'],'/datacube',specs_interp)
-            h5write([filename,'/datacube.h5'],'/mz',global_mz)
-            h5write([filename,'/datacube.h5'],'/dims',dims)
+            if isfile(['datacube.h5']) == 0
+                h5create(['datacube.h5'],'/datacube',size(specs_interp))
+                h5create(['datacube.h5'],'/mz',size(global_mz));
+                h5create(['datacube.h5'],'/dims',size(dims));
+                h5write(['datacube.h5'],'/datacube',specs_interp)
+                h5write(['datacube.h5'],'/mz',global_mz)
+                h5write(['datacube.h5'],'/dims',dims)
+            else
+                delete(['datacube.h5'])
+                h5create(['datacube.h5'],'/datacube',size(specs_interp))
+                h5create(['datacube.h5'],'/mz',size(global_mz));
+                h5create(['datacube.h5'],'/dims',size(dims));
+                h5write(['datacube.h5'],'/datacube',specs_interp)
+                h5write(['datacube.h5'],'/mz',global_mz)
+                h5write(['datacube.h5'],'/dims',dims)
+            end
         end
     catch
         warning(['something went wrong with the file ',filename,' probably due to missing pixels. Skipping to next.'])

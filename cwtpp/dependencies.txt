@@ -5,20 +5,24 @@
 'Parallel Computing Toolbox'	'7.2'
 
 
-D:\BOX\Box Sync\PhD\Brillouin\ENDO\data analysis\(pre)processing\DemoMVSA\VCA.m	
-D:\BOX\Box Sync\PhD\Brillouin\ENDO\data analysis\(pre)processing\DemoMVSA\computeAtransYinvLA.m	
-D:\BOX\Box Sync\PhD\Brillouin\ENDO\data analysis\(pre)processing\DemoMVSA\mvsa.m	
-D:\BOX\Box Sync\PhD\Brillouin\ENDO\data analysis\(pre)processing\DemoMVSA\quadProg1.m	
-D:\BOX\Box Sync\RA\codes\HBD workflow\component_analysis.m	
-D:\BOX\Box Sync\RA\codes\Imaging\DESI\TIC_norm.m	
-D:\BOX\Box Sync\RA\codes\Imaging\DESI\h5toMat.m	
-D:\BOX\Box Sync\RA\codes\Imaging\DESI\interpSpec.m	
-D:\BOX\Box Sync\RA\codes\Imaging\DESI\mstb-main\general\waters\get2Dcoord.m	
-D:\BOX\Box Sync\RA\codes\Imaging\DESI\mstb-main\general\waters\watersPackages.m	
-D:\BOX\Box Sync\RA\codes\Imaging\DESI\pre-processing\ALT\async.m	
-D:\BOX\Box Sync\RA\codes\Imaging\DESI\pre-processing\ALT\dtwa.m	
-D:\BOX\Box Sync\RA\codes\Imaging\DESI\pre-processing\ALT\preprocess.m	
-D:\BOX\Box Sync\RA\codes\useful tools\cwtpp.m	
-D:\BOX\Box Sync\RA\codes\useful tools\log_trans.m	
-D:\BOX\Box Sync\RA\codes\useful tools\parfor_wait.m	
-D:\BOX\Box Sync\RA\codes\useful tools\readraw2spec.m
+'D:\BOX\Box Sync\RA\codes\Imaging\ambient MSI\TIC.m'
+'D:\BOX\Box Sync\RA\codes\Imaging\ambient MSI\mstb-main\general\waters\get2Dcoord.m'
+'D:\BOX\Box Sync\RA\codes\Imaging\ambient MSI\mstb-main\general\waters\watersPackages.m'
+'D:\BOX\Box Sync\RA\codes\Imaging\ambient MSI\oycxms\cwtpp\util\TIC_norm.m'
+'D:\BOX\Box Sync\RA\codes\Imaging\ambient MSI\oycxms\cwtpp\util\async.m'
+'D:\BOX\Box Sync\RA\codes\Imaging\ambient MSI\oycxms\cwtpp\util\cwtpp.m'
+'D:\BOX\Box Sync\RA\codes\Imaging\ambient MSI\oycxms\cwtpp\util\h5toMat.m'
+'D:\BOX\Box Sync\RA\codes\Imaging\ambient MSI\oycxms\cwtpp\util\interpSpec.m'
+'D:\BOX\Box Sync\RA\codes\Imaging\ambient MSI\oycxms\cwtpp\util\log_trans.m'
+'D:\BOX\Box Sync\RA\codes\Imaging\ambient MSI\oycxms\cwtpp\util\parfor_wait.m'
+'D:\BOX\Box Sync\RA\codes\Imaging\ambient MSI\oycxms\cwtpp\util\pp_mode.m'
+'D:\BOX\Box Sync\RA\codes\Imaging\ambient MSI\oycxms\cwtpp\util\readraw2spec.m'
+'D:\BOX\Box Sync\RA\codes\Imaging\ambient MSI\pre-processing\ALT\dtwa.m'
+'D:\BOX\Box Sync\RA\codes\Imaging\ambient MSI\pre-processing\ALT\preprocess.m'
+'D:\BOX\Box Sync\RA\codes\Imaging\ambient MSI\pre-processing\ALT\v1 release\vis\DemoMVSA\VCA.m'
+'D:\BOX\Box Sync\RA\codes\Imaging\ambient MSI\pre-processing\ALT\v1 release\vis\DemoMVSA\computeAtransYinvLA.m'
+'D:\BOX\Box Sync\RA\codes\Imaging\ambient MSI\pre-processing\ALT\v1 release\vis\DemoMVSA\mvsa.m'
+'D:\BOX\Box Sync\RA\codes\Imaging\ambient MSI\pre-processing\ALT\v1 release\vis\DemoMVSA\quadProg1.m'
+'D:\BOX\Box Sync\RA\codes\Imaging\ambient MSI\pre-processing\ALT\v1 release\vis\component_analysis.m'
+'D:\BOX\Box Sync\RA\codes\useful tools\TICimg.m'
+'D:\BOX\Box Sync\RA\codes\useful tools\imzml\load_imzml.m'

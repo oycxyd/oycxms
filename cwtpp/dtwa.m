@@ -1,8 +1,21 @@
 %% using dtw to align (input is a cell of datasets to be aligned with their corresponding m/z vectors)
 
 function [data_aligned, mz_recal, I] = dtwa(varargin)    
-    datasets=varargin{1};
-    mzs= varargin{2};
+    if isempty(varargin)
+        dname = uigetdir();
+        cd (dname);
+        filenames=dir('*.raw');
+        datasets = {};mzs = {};
+        for i = 1:length(filenames)
+            filename = filenames(i).name;
+            [datasets{i},dimes{i},mzs{i}]=h5toMat([filename,'\datacube.h5']);
+        end
+        save = 1;
+    else
+        datasets=varargin{1};
+        mzs= varargin{2};
+    end
+    
     if length(varargin)<3
         method = 'mean_spec';
     else
@@ -12,9 +25,28 @@ function [data_aligned, mz_recal, I] = dtwa(varargin)
     for i = 1:length(datasets)
         lens(i) = size(datasets{i},2);
     end
-    [~,I] = sort(lens,'descend');
-    datasets = datasets(I);
-    mzs = mzs(I);
+    if strcmp(method,'mz')
+        disp('aligning to median length axis')
+        mean_length=median(lens);
+        [~,ind1]=min(abs(lens-mean_length));
+        I = 1:length(datasets);
+        dum1 = datasets;
+        dum2 = mzs;
+        dum1{1} = datasets{ind1};
+        dum2{1} = mzs{ind1};
+        dum1{ind1} = datasets{1};
+        dum2{ind1} = mzs{1};
+        datasets = dum1;
+        mzs = dum2;
+        I(1) = ind1;
+        I(ind1) = 1;
+        clear dum1
+        clear dum2
+    else
+        [~,I] = sort(lens,'descend');
+        datasets = datasets(I);
+        mzs = mzs(I);
+    end
 
 %% inter-data recalibration step (under development)
 %     threshold = 200;
@@ -27,18 +59,29 @@ function [data_aligned, mz_recal, I] = dtwa(varargin)
 % %     for n = 1:50
 %         disp(n)
 %         mz_raw = mzs{n};
-%         mz_new = MSrecal(mz_raw,references, 200);
+%         [~,locs] = findpeaks(mean(datasets{n}),'MinPeakProminence',mean(mean(datasets{n})));
+%         mz_raw_p = mz_raw(locs);
+%         [mz_new_p] = MSrecal(mz_raw_p,references, 1000);
+% %         for p = 1:3+1
+% %             if p == 1
+% %                 new_mz = coefs(end);
+% %             else
+% %                 new_mz = new_mz + coefs(end-p+1)*mz_raw.^(p-1);
+% %             end
+% %         end
+%         mz_raw(locs) = mz_new_p;
+%         [mz_new] = MSrecal(mz_raw,references, 1000);
 %         mzs_recal{n} = mz_new;
-%         for m = 1:length(ms_references)
-%                 [diff, ind] = min( abs(mz_new-ms_references(m,1)) );
-%     %             [diff, ind] = min( abs(mz_raw-ms_references(m,1)) );
-%                 ppm = diff/ms_references(m,1)*10^6;
-%                 if ppm <= threshold
-%                     ms_references(m,n+1) = ind;
-%                 else
-%                     ms_references(m,:)=0;
-%                 end
-%         end     
+% %         for m = 1:length(ms_references)
+% %                 [diff, ind] = min( abs(mz_new-ms_references(m,1)) );
+% %     %             [diff, ind] = min( abs(mz_raw-ms_references(m,1)) );
+% %                 ppm = diff/ms_references(m,1)*10^6;
+% %                 if ppm <= threshold
+% %                     ms_references(m,n+1) = ind;
+% %                 else
+% %                     ms_references(m,:)=0;
+% %                 end
+% %         end     
 %     end
 %     ms_references(ms_references(:,1)==0,:)=[];
 %     
@@ -51,9 +94,11 @@ function [data_aligned, mz_recal, I] = dtwa(varargin)
 %     end
 %% DTW-based alignment
     data_aligned = {};
-    data1 = (datasets{1});
-    data_aligned{1} = data1;
+
     mz_recal = mzs{1};
+    data1 = (datasets{1});
+
+    data_aligned{1} = data1;
 %     mz_recal(ms_references(:,n+1))=ms_references(:,1);
     for n = 1:length(datasets)-1
         disp(['aligining file ',num2str(n)])
@@ -79,6 +124,29 @@ function [data_aligned, mz_recal, I] = dtwa(varargin)
         data_aligned{n+1} = data_dtw;
         clear data_dtw
         counter1.Destroy
+    end
+    
+    if save == 1
+        for i = 1:length(filenames)
+            disp(i)
+            filename = filenames(I(i)).name;
+            if isfile([filename,'/datacube_aligned.h5']) == 0
+                h5create([filename,'/datacube_aligned.h5'],'/datacube',size(data_aligned{i}))
+                h5create([filename,'/datacube_aligned.h5'],'/mz',size(mz_recal));
+                h5create([filename,'/datacube_aligned.h5'],'/dims',size(dimes{I(i)}));
+                h5write([filename,'/datacube_aligned.h5'],'/datacube',data_aligned{i})
+                h5write([filename,'/datacube_aligned.h5'],'/mz',mz_recal)
+                h5write([filename,'/datacube_aligned.h5'],'/dims',dimes{I(i)})
+            else
+                delete([filename,'/datacube_aligned.h5'])
+                h5create([filename,'/datacube_aligned.h5'],'/datacube',size(data_aligned{i}))
+                h5create([filename,'/datacube_aligned.h5'],'/mz',size(mz_recal));
+                h5create([filename,'/datacube_aligned.h5'],'/dims',size(dimes{I(i)}));
+                h5write([filename,'/datacube_aligned.h5'],'/datacube',data_aligned{i})
+                h5write([filename,'/datacube_aligned.h5'],'/mz',mz_recal)
+                h5write([filename,'/datacube_aligned.h5'],'/dims',dimes{I(i)})
+            end
+        end
     end
     
 %% visualise results
