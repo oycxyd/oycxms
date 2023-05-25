@@ -31,12 +31,24 @@ else
     Imin = 100;
 end
 
+if nargin > 2
+    use_metadata = varargin{3};
+else
+    use_metadata = 0;
+end
+    
 [list_of_peaks,dims] = pp_mode(filename,mode,Imin);
-if strcmp(mode,'workspace') == 0
-    if strcmp(mode,'.raw')
-        save([filename,'\cwtpeaks'],'list_of_peaks')
-    else
-        save(['cwtpeaks'],'list_of_peaks')
+if use_metadata == 1
+    mode = '.raw';
+else
+    if strcmp(mode,'workspace') == 0
+        if strcmp(mode,'.raw')
+            save([filename,'\cwtpeaks'],'list_of_peaks')
+        else
+            save(['cwtpeaks'],'list_of_peaks')
+        end
     end
 end
+
+
 toc

@@ -15,6 +15,14 @@ tic
             filenames = cellstr(filenames);
         end
     end
+%% load in metadata if available
+    if exist('metadata.csv','file') > 0
+        metadata = readcell('metadata.csv');
+        use_metadata = 1;
+        disp('metadata found in folder.')
+    else
+        use_metadata = 0;
+    end
 
     for n = 1:length(filenames)
         disp(['preprocessing file ',num2str(n),' of ',num2str(length(filenames))])
@@ -38,6 +46,19 @@ tic
 %% peak detection w CWTPP
     try
         filename = filenames(n).name;
+        if use_metadata == 1
+            disp('using metadata!')
+            meta_i = find(contains(metadata(:,1),filename));
+            data_select = {};
+            for p = 1:length(meta_i)
+                scans = cell2mat([metadata(meta_i(p),4),metadata(meta_i(p),5)]);             
+                for q = scans(1):scans(2)
+                    [mz,spectrum] = readraw2spec(filename,q);
+                    scan = cat(1,mz,spectrum);
+                    data_select = cat(1,data_select,scan);
+                end
+            end
+        end
     catch
         if iscell(filenames)
             filenames = filenames{1};
@@ -45,7 +66,11 @@ tic
         filename = filenames;
     end
     try
-        [cwtpeaks,dims,mode] = cwtpp(filename);
+        if use_metadata == 1
+            [cwtpeaks,dims,mode] = cwtpp(data_select,100,use_metadata);
+        else
+            [cwtpeaks,dims,mode] = cwtpp(filename);
+        end
         %% define a global axis (vector in HS data thats ~ mean/median)
         spectral_lens = [];
         specs = cwtpeaks;
@@ -67,11 +92,13 @@ tic
         % parallelised
 
         % check mean spec & TIC image
+        if use_metadata ~= 1
         TIC_image = TICimg(specs_interp,dims,0);
-        figure
-        subplot(1,2,1);
-        imagesc(TIC_image);axis image;colormap('magma');
-        title('TIC image', 'Interpreter', 'none')
+        figure      
+            subplot(1,2,1);
+            imagesc(TIC_image);axis image;colormap('magma');
+            title('TIC image', 'Interpreter', 'none')
+        end
         
         subplot(1,2,2);
         stem(global_mz,mean(specs_interp),'Marker','none');

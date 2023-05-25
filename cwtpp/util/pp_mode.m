@@ -445,6 +445,9 @@ function [list_of_peaks,dims] = pp_mode(varargin)
                 end
             end
         end
+        if exist('dims','var') == 0
+            dims = [0,0];
+        end
         counter1.Destroy
     end
     
