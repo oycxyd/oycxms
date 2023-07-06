@@ -152,7 +152,7 @@ tic
         switch answer
             case 'Yes'
                 disp([answer ' OK.'])
-                datasets = {};mzs = {};
+                datasets = {};dimes = {};mzs = {};
                 for i = 1:length(filenames)
                     filename = filenames(i).name;
                     [datasets{i},dimes{i},mzs{i}]=h5toMat([filename,'\datacube.h5']);

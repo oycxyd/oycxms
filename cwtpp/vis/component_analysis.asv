@@ -14,7 +14,7 @@ function [varargout,Image]=component_analysis(input,p, dims,datatype)
 % you have a rough of idea for p (number of components)
 
 if nargin < 4
-    datatype = 'msi';
+    datatype = 'msi'
 end
 
 stop=0;
@@ -75,17 +75,16 @@ switch answer
         for i=1:p
             Image_dum=reshape(scores(i,:),[xsize, ysize]);
             
-            if strcmp(datatype,'BRI')
-                %Brillouin
-                Image_dum(:,2:2:end)=flipud(Image_dum(:,2:2:end));
-                Image_dum=rot90(Image_dum);
+            if 
+            %Brillouin
+%             Image_dum(:,2:2:end,i)=flipud(Image_dum(:,2:2:end,i));
+%             Image_dum=rot90(Image_dum(:,:,i));
             
-            else            
-    %            MSI
-                Image_dum=rot90(Image_dum,-1);
-                Image_dum=fliplr(Image_dum);
-            end
+%             MSI
+            Image_dum=rot90(Image_dum,-1);
+            Image_dum=fliplr(Image_dum);
             Image(:,:,i) = Image_dum;
+            
             
             figure;imagesc(0:xsize,0:ysize,Image_dum);colorMap = jet(256);colormap(colorMap); colorbar;
             title(num2str(['component ',num2str(i),' abundance']));

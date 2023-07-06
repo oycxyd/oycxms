@@ -14,7 +14,7 @@ function [data_aligned, mz_recal, I] = dtwa(varargin)
     else
         datasets=varargin{1};
         mzs= varargin{2};
-        save = 1;
+        save = 0;
     end
     
     if length(varargin)<3
