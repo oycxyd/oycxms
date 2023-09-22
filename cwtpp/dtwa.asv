@@ -10,7 +10,7 @@ function [data_aligned, mz_recal, I] = dtwa(varargin)
             filename = filenames(i).name;
 %             [datasets{i},dimes{i},mzs{i}]=h5toMat([filename,'\datacube.h5']);
             [~,dimes{i},mzs{i}]=h5toMat([filename,'\datacube.h5']);
-%             datasets = {};
+            datasets = {};
         end
         save = 1;
     else
@@ -28,7 +28,6 @@ function [data_aligned, mz_recal, I] = dtwa(varargin)
     for i = 1:length(filenames)
         lens(i) = length(mzs{i});
     end
-    
     if strcmp(method,'mz')
         disp('aligning to median length axis')
         mean_length=median(lens);
@@ -97,9 +96,10 @@ function [data_aligned, mz_recal, I] = dtwa(varargin)
 %         clear dum
 %     end
 %% DTW-based alignment
+    data_aligned = {};
+
     mz_recal = mzs{1};
     [data1]=h5toMat([filenames(I(1)).name,'\datacube.h5']);
-    filename = filenames(I(1)).name;
     if save == 1
         if isfile([filename,'/datacube_aligned.h5']) == 0
             h5create([filename,'/datacube_aligned.h5'],'/datacube',size(data1))
@@ -117,10 +117,9 @@ function [data_aligned, mz_recal, I] = dtwa(varargin)
             h5write([filename,'/datacube_aligned.h5'],'/mz',mz_recal)
             h5write([filename,'/datacube_aligned.h5'],'/dims',dimes{I(1)})
         end
-    end
     
 %     mz_recal(ms_references(:,n+1))=ms_references(:,1);
-    for n = 1:length(mzs)-1
+    for n = 1:length(datasets)-1
         disp(['aligining file ',num2str(n)])
         filename = filenames(I(n+1)).name;
         data2 = h5toMat([filename,'\datacube.h5']);
@@ -144,65 +143,68 @@ function [data_aligned, mz_recal, I] = dtwa(varargin)
         end
         if save == 1        
 %                 disp(n)
-            disp('saving...');
+        `
             if isfile([filename,'/datacube_aligned.h5']) == 0
-                h5create([filename,'/datacube_aligned.h5'],'/datacube',size(data_dtw))
+                h5create([filename,'/datacube_aligned.h5'],'/datacube',size(data_aligned{i}))
                 h5create([filename,'/datacube_aligned.h5'],'/mz',size(mz_recal));
-                h5create([filename,'/datacube_aligned.h5'],'/dims',size(dimes{I(n+1)}));
-                h5write([filename,'/datacube_aligned.h5'],'/datacube',data_dtw)
+                h5create([filename,'/datacube_aligned.h5'],'/dims',size(dimes{I(i)}));
+                h5write([filename,'/datacube_aligned.h5'],'/datacube',data_aligned{i})
                 h5write([filename,'/datacube_aligned.h5'],'/mz',mz_recal)
-                h5write([filename,'/datacube_aligned.h5'],'/dims',dimes{I(n+1)})
+                h5write([filename,'/datacube_aligned.h5'],'/dims',dimes{I(i)})
             else
                 delete([filename,'/datacube_aligned.h5'])
-                h5create([filename,'/datacube_aligned.h5'],'/datacube',size(data_dtw))
+                h5create([filename,'/datacube_aligned.h5'],'/datacube',size(data_aligned{i}))
                 h5create([filename,'/datacube_aligned.h5'],'/mz',size(mz_recal));
-                h5create([filename,'/datacube_aligned.h5'],'/dims',size(dimes{I(n+1)}));
-                h5write([filename,'/datacube_aligned.h5'],'/datacube',data_dtw)
+                h5create([filename,'/datacube_aligned.h5'],'/dims',size(dimes{I(i)}));
+                h5write([filename,'/datacube_aligned.h5'],'/datacube',data_aligned{i})
                 h5write([filename,'/datacube_aligned.h5'],'/mz',mz_recal)
-                h5write([filename,'/datacube_aligned.h5'],'/dims',dimes{I(n+1)})
+                h5write([filename,'/datacube_aligned.h5'],'/dims',dimes{I(i)})
             end
         end
         clear data_dtw
         counter1.Destroy
     end
     
+    
+    end
+    
 %% visualise results
-%     answer = questdlg('Visualise results of alignment (using PCA)?', ...
-%     'Question');
-%         switch answer
-%             case 'Yes'
-%                 disp([answer ' OK.'])
-%                 specs_aligned = [];
-%                 labels = {};
-%                 for m = 1:length(data_aligned)
-%                     data_m = data_aligned{m};
-%                     if length(data_aligned)> 5
-%                         disp('a lot of data! taking 10% pixels per file only.')
-%                         percentage = 10;
-%                         sample_size = ceil(size(data_m,1)*percentage/100);
-%                         idx = randi(sample_size,[1 sample_size]);
-%                         data_m = data_m(idx,:);
-%                         specs_aligned = cat(1,specs_aligned,data_m);
-%                     else
-%                         specs_aligned = cat(1,specs_aligned,data_aligned{m});
-%                     end
-%                     dum = {};
-%                     for i = 1:size(data_m,1)
-%                         dum{i}=['data',num2str(m)];
-%                     end
-%                     dum = dum';
-%                     labels = cat(1,labels,dum);
-%                     clear dum
-%                 end
-% 
-%                 [output] = component_analysis(log_trans(TIC_norm(specs_aligned)),3,[0 0]);
-%                 scores = output{2};
-%                 figure,gscatter(scores(1,:),scores(2,:),labels)   
-%             case 'No'
-%                 disp([answer ' OK.'])
-%             case 'Cancel'
-%                 disp([answer ' Aborted.'])  
-%         end
+    answer = questdlg('Visualise results of alignment (using PCA)?', ...
+    'Question');
+        switch answer
+            case 'Yes'
+                disp([answer ' OK.'])
+                specs_aligned = [];
+                labels = {};
+                for m = 1:length(data_aligned)
+                    data_m = data_aligned{m};
+                    if length(data_aligned)> 5
+                        disp('a lot of data! taking 10% pixels per file only.')
+                        percentage = 10;
+                        sample_size = ceil(size(data_m,1)*percentage/100);
+                        idx = randi(sample_size,[1 sample_size]);
+                        data_m = data_m(idx,:);
+                        specs_aligned = cat(1,specs_aligned,data_m);
+                    else
+                        specs_aligned = cat(1,specs_aligned,data_aligned{m});
+                    end
+                    dum = {};
+                    for i = 1:size(data_m,1)
+                        dum{i}=['data',num2str(m)];
+                    end
+                    dum = dum';
+                    labels = cat(1,labels,dum);
+                    clear dum
+                end
+
+                [output] = component_analysis(log_trans(TIC_norm(specs_aligned)),3,[0 0]);
+                scores = output{2};
+                figure,gscatter(scores(1,:),scores(2,:),labels)   
+            case 'No'
+                disp([answer ' OK.'])
+            case 'Cancel'
+                disp([answer ' Aborted.'])  
+        end
 %     data_aligned = data_aligned(I);
     % [~, ~,~,coefs]=peakfit([mz2 mz_recal],0,0,1,28,n,1,0,0,0,1);
     % for p = 1:n+1
