@@ -14,9 +14,21 @@ function [data_aligned, mz_recal, I] = dtwa(varargin)
         end
         save = 1;
     else
-        datasets=varargin{1};
-        mzs= varargin{2};
-        save = 0;
+        dname = varargin{1};
+        cd (dname);
+        filenames=dir('*.raw');
+        datasets = {};mzs = {};
+        for i = 1:length(filenames)
+            filename = filenames(i).name;
+%             [datasets{i},dimes{i},mzs{i}]=h5toMat([filename,'\datacube.h5']);
+            [~,dimes{i},mzs{i}]=h5toMat([filename,'\datacube.h5']);
+%             datasets = {};
+        end
+        if nargin < 2
+            save = 0;
+        else
+            save = varargin{2};
+        end
     end
     
     if length(varargin)<3
