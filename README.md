@@ -27,9 +27,9 @@ vcredist_x64.exe (c++ compiler package)
 
 - Open Matlab, try typing ‘mex -setup’ in the command window, if the installation was completed correctly then you will see this:
 
-'MEX configured to use '**Microsoft Windows SDK 7.1(C)**' for C language compilation.'
+  'MEX configured to use '**Microsoft Windows SDK 7.1(C)**' for C language compilation.'
 
-- If you did not see this, then you many have to copy some configuration files (xml files, **please email me**) to put in C: Users > your username > AppData (you may need to reveal this hidden folder) > Roaming > MathWorks > MATLAB > your MATLAB version >
+- If you did not see this, then you may have to copy some configuration files (xml files, **please email me**) to put in C: Users > your username > AppData (you may need to reveal this hidden folder) > Roaming > MathWorks > MATLAB > your MATLAB version >
 
 3. You will also need the following toolboxes:
 'Signal Processing Toolbox'	'8.4'
