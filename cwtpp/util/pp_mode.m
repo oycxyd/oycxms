@@ -142,7 +142,7 @@ function [list_of_peaks,dims] = pp_mode(varargin)
 
                     end
                     if isempty(peaks)
-                        list_of_peaks{n} = 0;
+                        list_of_peaks{n} = [mz; zeros(1,length(spectrum))];;
                     else
                         [~,ia] = unique(peaks(1,:));
                         peaks = peaks(:,ia);
@@ -293,7 +293,7 @@ function [list_of_peaks,dims] = pp_mode(varargin)
 
                     end
                     if isempty(peaks)
-                        list_of_peaks{n} = 0;
+                        list_of_peaks{n} = [mz; zeros(1,length(spectrum))];;
                     else
                         [~,ia] = unique(peaks(1,:));
                         peaks = peaks(:,ia);
@@ -313,7 +313,8 @@ function [list_of_peaks,dims] = pp_mode(varargin)
         
         counter1 = parfor_wait(numS, 'Waitbar', true);
         disp('loading from workspace')
-        parfor n = 1:numS
+        for n = 1:numS
+%             disp(n);
             counter1.Send;
             dum = (raw_specs{n});
             if size(dum,2)< 5
@@ -435,7 +436,7 @@ function [list_of_peaks,dims] = pp_mode(varargin)
 
                     end
                     if isempty(peaks)
-                        list_of_peaks{n} = 0;
+                        list_of_peaks{n} = [mz; zeros(1,length(spectrum))];
                     else
                         [~,ia] = unique(peaks(1,:));
                         peaks = peaks(:,ia);
