@@ -16,12 +16,12 @@ function [Image_dum,ppm] = ion_image(feature, mz, data, dims, plot_on_off,contra
         Image_dum = ion_image;
     %% from raster scanning
 
-        Image_dum(:,2:2:end)=flipud(Image_dum(:,2:2:end));
-        
-
-
+%         Image_dum(:,2:2:end)=flipud(Image_dum(:,2:2:end));
+%         
+% 
+% 
         Image_dum=rot90(Image_dum,-1);
-        Image_dum(2:2:end,:)=fliplr(Image_dum(2:2:end,:));
+%         Image_dum(2:2:end,:)=fliplr(Image_dum(2:2:end,:));
         Image_dum=fliplr(Image_dum);
     end
     
