@@ -37,8 +37,9 @@ function [mzs_recal] = msreffind(varargin)
     end
 
 %     mzs_recal = {};
-    for n = 2:length(mzs_recal)
-%     for n = 2:3
+%     for n = 2:length(mzs)
+%     for n = 2:length(mzs_recal)
+    for n = 2:3
         disp(n)
         mz_raw = mzs_recal{n};
 %         mz_raw = mzs{n};
@@ -54,10 +55,10 @@ function [mzs_recal] = msreffind(varargin)
     %     [mz_new] = MSrecal(mz_raw,references, 1000);
     %     mzs_recal{n} = mz_new;
         for m = 1:size(ms_references,1)
-                [diff, ind] = min( abs(mz_raw_p-ms_references(m,1)) );
+%                 [diff, ind] = min( abs(mz_raw_p-ms_references(m,1)) );
+                [diff, ind] = min( abs(mz_raw-ms_references(m,1)) );
                 ppm = diff/ms_references(m,1)*10^6;
                 if ppm <= threshold
-                    [~, ind] = min( abs(mz_raw-mz_raw_p(ind)) );
                     ms_references(m,n) = ind;
                 else
                     ms_references(m,:)=0;

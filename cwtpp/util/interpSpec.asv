@@ -8,19 +8,19 @@ function [new_spectra]=interpSpec(varargin)
 %     counter1 = waitbar(0,'Interpolating...');
     if nargin <4
         counter1 = parfor_wait(num_spec, 'Waitbar', true);
-        parfor i=1:num_spec
-%             disp(i)
+        for i=1:num_spec
+            disp(i)
     %         waitbar(i/size, counter1);
             counter1.Send; 
             try
-                if iscell(specs)
-                    dum=double(cell2mat(specs(i)));
-                    old_mz = dum(1,:);
-                    old_spectrum = dum(2,:);
-                else
-                    old_mz = varargin{3};
-                    old_spectrum = specs(i,:);
-                end
+                            if iscell(specs)
+                dum=double(cell2mat(specs(i)));
+                old_mz = dum(1,:);
+                old_spectrum = dum(2,:);
+            else
+                old_mz = varargin{3};
+                old_spectrum = specs(i,:);
+            end
                 if length(old_mz) ~= length(new_mz)
         %         if length(dum(:,1)) ~= length(new_mz)
                         new_spectrum=interp1(old_mz,old_spectrum,new_mz);

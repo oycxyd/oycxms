@@ -24,6 +24,7 @@ tic
         use_metadata = 0;
     end
 
+    logs = {};
     for n = 1:length(filenames)
         disp(['preprocessing file ',num2str(n),' of ',num2str(length(filenames))])
 %% TIC image & ROI detection
@@ -48,10 +49,10 @@ tic
         filename = filenames(n).name;
         if use_metadata == 1
             disp('using metadata!')
-            meta_i = find(contains(metadata(:,1),filename));
+            meta_i = find(contains(metadata(:,2),filename));
             data_select = {};
             for p = 1:length(meta_i)
-                scans = cell2mat([metadata(meta_i(p),4),metadata(meta_i(p),5)]);             
+                scans = cell2mat([metadata(meta_i(p),3),metadata(meta_i(p),4)]);             
                 for q = scans(1):scans(2)
                     [mz,spectrum] = readraw2spec(filename,q);
                     scan = cat(1,mz,spectrum);
@@ -98,11 +99,12 @@ tic
             subplot(1,2,1);
             imagesc(TIC_image);axis image;colormap('magma');
             title('TIC image', 'Interpreter', 'none')
+            subplot(1,2,2);
+            stem(global_mz,mean(specs_interp),'Marker','none');
+            title(filename, 'Interpreter', 'none')
         end
         
-        subplot(1,2,2);
-        stem(global_mz,mean(specs_interp),'Marker','none');
-        title(filename, 'Interpreter', 'none')
+
     
 %% save datacube to h5
         if strcmp(mode,'.raw')
@@ -140,9 +142,14 @@ tic
                 h5write(['datacube.h5'],'/dims',dims)
             end
         end
-    catch
-        warning(['something went wrong with the file ',filename,' probably due to missing pixels. Skipping to next.'])
+    catch e
+%         warning(['something went wrong with the file ',filename,' probably due to missing pixels. Skipping to next.'])
+        fprintf(2,'There was an error! The message was:\n%s',e.message);
+        logs{n} = filename;
     end
+    end
+    if ~isempty(logs)
+        writecell(logs','error_logs.csv')
     end
     disp('All Done!')
     

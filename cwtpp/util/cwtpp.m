@@ -43,9 +43,9 @@ if use_metadata == 1
 else
     if strcmp(mode,'workspace') == 0
         if strcmp(mode,'.raw')
-            save([filename,'\cwtpeaks'],'list_of_peaks')
+            save([filename,'\cwtpeaks'],'list_of_peaks','dims')
         else
-            save(['cwtpeaks'],'list_of_peaks')
+            save(['cwtpeaks'],'list_of_peaks','dims')
         end
     end
 end
