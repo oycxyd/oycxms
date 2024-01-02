@@ -21,9 +21,10 @@ press ok on the warning, make sure you untick "Visual C++ Compilers" and "Micros
 
 - Install 
 NDP452-KB2901907-x86-x64-AllOS-ENU.(**.net installation**)* _if the installation states that you already have this installed (most likely for modern Windows), then you can skip this
-VC-Compiler-KB2519277.exe (SDK patches)
-vcredist_x86.exe (c++ compiler package)
-vcredist_x64.exe (c++ compiler package)
+
+- VC-Compiler-KB2519277.exe (SDK patches)
+
+- vcredist_x86.exe (c++ compiler package) & vcredist_x64.exe (c++ compiler package)
 
 - Open Matlab, try typing ‘mex -setup’ in the command window, if the installation was completed correctly then you will see this:
 
