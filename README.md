@@ -20,7 +20,7 @@ https://uk.mathworks.com/matlabcentral/answers/101105-how-do-i-install-microsoft
 press ok on the warning, make sure you untick "Visual C++ Compilers" and "Microsoft Visual C++ 2010" components.
 
 - Install 
-NDP452-KB2901907-x86-x64-AllOS-ENU.(**.net installation**)* _if the installation states that you already have this installed (most likely for modern Windows), then you can skip this_
+NDP452-KB2901907-x86-x64-AllOS-ENU.(**.net installation**)* _if the installation states that you already have this installed (most likely for modern Windows), then you can skip this
 VC-Compiler-KB2519277.exe (SDK patches)
 vcredist_x86.exe (c++ compiler package)
 vcredist_x64.exe (c++ compiler package)
