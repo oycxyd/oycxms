@@ -37,7 +37,7 @@ function [data_aligned, mz_recal, I] = dtwa(varargin)
     %     method = varargin{3};
     % end
     answer = questdlg('which method to use?', ...
-    'Question','meanspec','refmass','cancel');
+    'Question');
     switch answer
         case 'meanspec'
             method = 'meanspec';
@@ -45,8 +45,6 @@ function [data_aligned, mz_recal, I] = dtwa(varargin)
         case 'refmass'
             method = 'mz';
             disp([answer ' OK.'])
-        case 'cancel'
-            disp([answer ' Aborted.'])
     end
     
     for i = 1:length(filenames)
@@ -73,8 +71,7 @@ function [data_aligned, mz_recal, I] = dtwa(varargin)
         I(ind1) = 1;
 %         clear dum1
         clear dum2
-        disp('using the following reference masses: ')
-        disp([num2str(ms_references)])
+        disp(['using the following reference masses: ',num2str(ms_references)])
     else
         [~,I] = sort(lens,'descend');
 %         datasets = datasets(I);
@@ -154,7 +151,7 @@ function [data_aligned, mz_recal, I] = dtwa(varargin)
     % data_length = zeros(length(mzs),1);
     % mz2_length = zeros(length(mzs),1);
     for n = 1:length(mzs)-1
-        disp(['aligining file ',num2str(n),'/',num2str(length(mzs)-1)])
+        disp(['aligining file ',num2str(n)])
         filename = filenames(I(n+1)).name;
         data2 = h5toMat([filename,'\datacube.h5']);
         % data_length(n) = size(data2,2);

@@ -1,4 +1,4 @@
-function [mzs_recal] = msreffind(varargin)
+function [mzs_output, ms_references] = msreffind(varargin)
     if isempty(varargin)
         dname = uigetdir();
         cd (dname);
@@ -12,6 +12,7 @@ function [mzs_recal] = msreffind(varargin)
         end
     else
         datasets = varargin{1};
+        mzs = varargin{2};
     end
     
     for i = 1:length(datasets)
@@ -20,6 +21,7 @@ function [mzs_recal] = msreffind(varargin)
     [~,I] = sort(lens,'descend');
     datasets = datasets(I);
     mzs = mzs(I);
+    mzs_recal = mzs;
 
 %     mz_recal = mzs{1};
     mz_recal = mzs_recal{1};
@@ -31,7 +33,7 @@ function [mzs_recal] = msreffind(varargin)
     % ms_references(:,1) = mz_recal;
 
     if nargin < 2
-        threshold = 3000;
+        threshold = 300;
     else
         threshold = varargin{2};
     end
@@ -39,7 +41,7 @@ function [mzs_recal] = msreffind(varargin)
 %     mzs_recal = {};
     for n = 2:length(mzs_recal)
 %     for n = 2:3
-        disp(n)
+        % disp(n)
         mz_raw = mzs_recal{n};
 %         mz_raw = mzs{n};
         if size(datasets{n},1) ~= 1
@@ -72,4 +74,6 @@ function [mzs_recal] = msreffind(varargin)
         mzs_recal{i} = dum;
         clear dum
     end
+    mzs_output(I) = mzs_recal;
+    ms_references = ms_references(:,1);
 end

@@ -75,7 +75,7 @@ tic
         %% define a global axis (vector in HS data thats ~ mean/median)
         spectral_lens = [];
         specs = cwtpeaks;
-%         specs = raw_specs;
+%         specs = list_of_peaks;
         for p =1:length(specs)
             spectral_lens(p) = length(cell2mat(specs(p)));
         end
@@ -94,15 +94,20 @@ tic
 
         % check mean spec & TIC image
         if use_metadata ~= 1
-        TIC_image = TICimg(specs_interp,dims,0);
-        figure      
-            subplot(1,2,1);
-            imagesc(TIC_image);axis image;colormap('magma');
-            title('TIC image', 'Interpreter', 'none')
-            subplot(1,2,2);
-            stem(global_mz,mean(specs_interp),'Marker','none');
-            title(filename, 'Interpreter', 'none')
+            try
+                TIC_image = TICimg(specs_interp,dims,0);
+                figure      
+                subplot(1,2,1);
+                imagesc(TIC_image);axis image;colormap('magma');
+                title('TIC image', 'Interpreter', 'none')
+                subplot(1,2,2);
+                stem(global_mz,mean(specs_interp),'Marker','none');
+                title(filename, 'Interpreter', 'none')
+            catch
+                % continue
+            end
         end
+        
         
 
     
@@ -160,26 +165,6 @@ tic
             case 'Yes'
                 disp([answer ' OK.'])
                 dtwa(dname,1);
-%                 for i = 1:length(filenames)
-%                     disp(i)
-%                     filename = filenames(I(i)).name;
-%                     if isfile([filename,'/datacube_aligned.h5']) == 0
-%                         h5create([filename,'/datacube_aligned.h5'],'/datacube',size(data_aligned{i}))
-%                         h5create([filename,'/datacube_aligned.h5'],'/mz',size(mz_new));
-%                         h5create([filename,'/datacube_aligned.h5'],'/dims',size(dimes{I(i)}));
-%                         h5write([filename,'/datacube_aligned.h5'],'/datacube',data_aligned{i})
-%                         h5write([filename,'/datacube_aligned.h5'],'/mz',mz_new)
-%                         h5write([filename,'/datacube_aligned.h5'],'/dims',dimes{I(i)})
-%                     else
-%                         delete([filename,'/datacube_aligned.h5'])
-%                         h5create([filename,'/datacube_aligned.h5'],'/datacube',size(data_aligned{i}))
-%                         h5create([filename,'/datacube_aligned.h5'],'/mz',size(mz_new));
-%                         h5create([filename,'/datacube_aligned.h5'],'/dims',size(dimes{I(i)}));
-%                         h5write([filename,'/datacube_aligned.h5'],'/datacube',data_aligned{i})
-%                         h5write([filename,'/datacube_aligned.h5'],'/mz',mz_new)
-%                         h5write([filename,'/datacube_aligned.h5'],'/dims',dimes{I(i)})
-%                     end
-%                 end
             case 'No'
                 disp([answer ' OK.'])
             case 'Cancel'

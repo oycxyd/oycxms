@@ -85,13 +85,23 @@ switch answer
                 Image_dum=rot90(Image_dum,-1);
                 Image_dum=fliplr(Image_dum);
             end
-            Image(:,:,i) = Image_dum;
-            
-            figure;imagesc(0:xsize,0:ysize,Image_dum);colorMap = jet(256);colormap(colorMap); colorbar;
-            title(num2str(['component ',num2str(i),' abundance']));
-            ax=gca;
-            ax.PlotBoxAspectRatio=[xsize ysize  1];
+            Images(:,:,i) = Image_dum;
         end
+        figure;
+        subplot(2,2,1);imagesc(0:xsize,0:ysize,Images(:,:,1));axis image;colormap('jet'); colorbar;
+        title('component 1 abundance');
+        subplot(2,2,2);imagesc(0:xsize,0:ysize,Images(:,:,2));axis image;colormap('jet'); colorbar;
+        title('component 2 abundance');
+        subplot(2,2,3);imagesc(0:xsize,0:ysize,Images(:,:,3));axis image;colormap('jet'); colorbar;
+        title('component 3 abundance');
+        rgb_ind = perms(1:3);
+        indc = randi([1 6],1);
+        ind = rgb_ind(indc,:);
+        rgb = cat(3,imadjust(mat2gray(Images(:,:,ind(1)))),imadjust(mat2gray(Images(:,:,ind(2)))),imadjust(mat2gray(Images(:,:,ind(3)))));
+        subplot(2,2,4);imagesc(0:xsize,0:ysize,rgb);axis image;colorbar;
+        title('Overlay');
+        % ax=gca;
+        % ax.PlotBoxAspectRatio=[xsize ysize  1];
     case 'No'
         disp([answer ' OK.'])
     case 'Cancel'

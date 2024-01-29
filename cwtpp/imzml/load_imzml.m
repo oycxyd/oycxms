@@ -8,7 +8,7 @@ function [raw_specs,dims,imzML] = load_imzml(varargin)
     end
 
     try
-        javaclasspath('D:\BOX\Box Sync\RA\codes\useful tools\imzML converter\imzMLConverter.jar');
+        javaclasspath('D:\BOX\Box Sync\RA\codes\Imaging\ambient MSI\oycxms\cwtpp\imzml\imzML converter\imzMLConverter.jar');
         imzML = imzMLConverter.ImzMLHandler.parseimzML(filename);
 %         dims = [imzML.getWidth(),imzML.getHeight()];
         dims = [imzML.getHeight(),imzML.getWidth()];
