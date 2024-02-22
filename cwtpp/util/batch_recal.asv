@@ -8,19 +8,22 @@ function batch_recal(varargin)
     ppms = [];
     if isempty(varargin)
         threshold = 300;%ppm
-        references = 255.2330;
     else
-        threshold = varargin{1};
-        references = varargin{2};
+        threshold = varargin{2};
     end
-    
 
     for i = 1:length(filenames)
-        disp(['recalibrating ', num2str(i),'/',num2str(length(filenames))])
-        filename = filenames(i).name;
-        [~,dimes{i},mzs{i}]=h5toMat([filename,'\datacube.h5']);
+
+    
+
+    
+    for i = 1:length(mzs)
+    % for i = 1:5
+        disp(i)
         [mzs_recal{i},ppm] = MSrecal(mzs{i},references, threshold);
         ppms(i) = mean(ppm);
-        h5write([filename,'/datacube.h5'],'/mz',mzs_recal{i})
     end
+    
+    select = (ppms<=threshold);
+    mzs_recal = mzs_recal(select);
 end

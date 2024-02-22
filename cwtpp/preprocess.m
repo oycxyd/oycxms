@@ -75,7 +75,7 @@ tic
         %% define a global axis (vector in HS data thats ~ mean/median)
         spectral_lens = [];
         specs = cwtpeaks;
-%         specs = list_of_peaks;
+        % specs = raw_peaks;
         for p =1:length(specs)
             spectral_lens(p) = length(cell2mat(specs(p)));
         end
