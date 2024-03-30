@@ -62,6 +62,7 @@ function [new_mz,ppms2,coefs] = MSrecal(mz_raw,references, threshold)
             else
                 stop = 1;
                 new_mz = mz_raw;
+                ppms2 = ppms1;
             end
         end
     end

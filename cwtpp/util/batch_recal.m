@@ -18,9 +18,11 @@ function batch_recal(varargin)
     for i = 1:length(filenames)
         disp(['recalibrating ', num2str(i),'/',num2str(length(filenames))])
         filename = filenames(i).name;
+        disp(filename)
         [~,dimes{i},mzs{i}]=h5toMat([filename,'\datacube.h5']);
         [mzs_recal{i},ppm] = MSrecal(mzs{i},references, threshold);
         ppms(i) = mean(ppm);
         h5write([filename,'/datacube.h5'],'/mz',mzs_recal{i})
     end
+    disp (['the maximum average ppm after recalibration is ',num2str(max(ppms))])
 end
