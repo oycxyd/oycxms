@@ -33,7 +33,7 @@ function [mzs_output, ms_references] = msreffind(varargin)
     % ms_references(:,1) = mz_recal;
 
     if nargin < 2
-        threshold = 300;
+        threshold = 1000;
     else
         threshold = varargin{2};
     end

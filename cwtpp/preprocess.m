@@ -73,16 +73,16 @@ tic
             [cwtpeaks,dims,mode] = cwtpp(filename);
         end
         %% define a global axis (vector in HS data thats ~ mean/median)
-        spectral_lens = [];
+        % spectral_lens = [];
         specs = cwtpeaks;
-        % specs = raw_peaks;
-        for p =1:length(specs)
-            spectral_lens(p) = length(cell2mat(specs(p)));
-        end
-        mean_length=max(spectral_lens);
+        % % specs = raw_peaks;
+        % for p =1:length(specs)
+        %     spectral_lens(p) = length(cell2mat(specs(p)));
+        % end
+        % mean_length=max(spectral_lens);
 %         mean_length=median(spectral_lens);
-        [~,ind1]=min(abs(spectral_lens-mean_length));
-
+        % [~,ind1]=min(abs(spectral_lens-mean_length));
+        [~,ind1] = max(cellfun(@length, specs));
         dum=(cell2mat(specs(ind1)));
         global_mz=dum(1,:);
         clear dum
