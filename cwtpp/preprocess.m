@@ -9,14 +9,19 @@ tic
         %my dir, it will just go to root if this folder doesn't exist
         cd (dname);
         filenames=[dir('*.raw');dir('*.imzml')];
+        % TQ_switch = 'TQ';
+        TQ_switch = 0;
     else
         filenames = varargin{1};
         if ischar(filenames)
             filenames = cellstr(filenames);
         end
+        if nargin > 1
+            TQ_switch = varargin{2};
+        end
     end
 %% load in metadata if available
-    if exist('metadata.csv','file') > 0
+    if exist('metadata.csv','file') == 2
         metadata = readcell('metadata.csv');
         use_metadata = 1;
         disp('metadata found in folder.')
@@ -67,15 +72,21 @@ tic
         filename = filenames;
     end
     try
-        if use_metadata == 1
-            [cwtpeaks,dims,mode] = cwtpp(data_select,100,use_metadata);
+        if ischar(TQ_switch)
+            disp('TQ data!')
+            [cwtpeaks,dims] = raw2mat(filename);
+            mode = '.raw';
         else
-            [cwtpeaks,dims,mode] = cwtpp(filename);
+            if use_metadata == 1
+                [cwtpeaks,dims,mode] = cwtpp(data_select,100,use_metadata,filename);
+            else
+                [cwtpeaks,dims,mode] = cwtpp(filename);
+            end
         end
         %% define a global axis (vector in HS data thats ~ mean/median)
         % spectral_lens = [];
         specs = cwtpeaks;
-        % % specs = raw_peaks;
+        % % specs = raw_specs;
         % for p =1:length(specs)
         %     spectral_lens(p) = length(cell2mat(specs(p)));
         % end

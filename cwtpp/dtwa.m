@@ -18,16 +18,39 @@ function [data_aligned, mz_recal, I] = dtwa(varargin)
         cd (dname);
         filenames=dir('*.raw');
         datasets = {};mzs = {};
-        for i = 1:length(filenames)
-            filename = filenames(i).name;
-            [datasets{i},dimes{i},mzs{i}]=h5toMat([filename,'\datacube.h5']);
-%             [~,dimes{i},mzs{i}]=h5toMat([filename,'\datacube.h5']);
-%             datasets = {};
-        end
+        
         if nargin < 2
             save = 0;
         else
             save = varargin{2};
+        end
+        if nargin > 2
+            mode = varargin{3};
+            if strcmp(mode, 'msp')
+                disp('using resampled data.')
+                for i = 1:length(filenames)
+                filename = filenames(i).name;
+                [~,dimes{i},mzs{i}]=h5toMat([filename,'\datacube_msp.h5']);
+    %             [~,dimes{i},mzs{i}]=h5toMat([filename,'\datacube.h5']);
+    %             datasets = {};
+                end
+            end
+            if strcmp(mode, 'recal')
+                disp('using recalibrated data.')
+                for i = 1:length(filenames)
+                filename = filenames(i).name;
+                [datasets{i},dimes{i},mzs{i}]=h5toMat([filename,'\datacube_recal.h5']);
+    %             [~,dimes{i},mzs{i}]=h5toMat([filename,'\datacube.h5']);
+    %             datasets = {};
+                end
+            end
+        else
+            for i = 1:length(filenames)
+            filename = filenames(i).name;
+            [~,dimes{i},mzs{i}]=h5toMat([filename,'\datacube.h5']);
+%             [~,dimes{i},mzs{i}]=h5toMat([filename,'\datacube.h5']);
+%             datasets = {};
+            end
         end
     end
     
@@ -55,12 +78,17 @@ function [data_aligned, mz_recal, I] = dtwa(varargin)
     
     if strcmp(method,'mz')
         disp('aligning to median length axis')
-        mean_length=median(lens);
+        % mean_length=median(lens);
+        mean_length=max(lens);
         [~,ind1]=min(abs(lens-mean_length));
         I = 1:length(mzs);
 %         dum1 = datasets;
         % dum2 = mzs;
-        [mzs_recal, ms_references] = msreffind();
+        if strcmp(mode, 'recal')
+            [mzs_recal, ms_references] = msreffind('recal');
+        else
+            [mzs_recal, ms_references] = msreffind();
+        end
         mzs = mzs_recal;
         dum2 = mzs;
 %         dum1{1} = datasets{ind1};

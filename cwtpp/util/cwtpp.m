@@ -33,6 +33,7 @@ end
 
 if nargin > 2
     use_metadata = varargin{3};
+    dir = varargin{4};
 else
     use_metadata = 0;
 end
@@ -40,6 +41,7 @@ end
 [list_of_peaks,dims] = pp_mode(filename,mode,Imin);
 if use_metadata == 1
     mode = '.raw';
+    save([dir,'\cwtpeaks'],'list_of_peaks','dims')
 else
     if strcmp(mode,'workspace') == 0
         if strcmp(mode,'.raw')

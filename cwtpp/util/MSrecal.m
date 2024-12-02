@@ -8,10 +8,10 @@ function [new_mz,ppms2,coefs] = MSrecal(mz_raw,references, threshold)
     y = [];
     ppms1 = [];
     if length(references) < 2
-        [diff] = min( abs(mz_raw-references(1)) );
+        [diff,ind] = min( abs(mz_raw-references(1)) );
         ppms1 = diff/references(1)*10^6;
         if ppms1 <= threshold
-            new_mz = mz_raw+diff;
+            new_mz = mz_raw-(mz_raw(ind)-references(1));
             ppms2 = ppms1;
             disp(['the average ppm after correction is ', num2str((ppms2))])
         else

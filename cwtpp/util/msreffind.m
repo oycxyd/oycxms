@@ -11,8 +11,17 @@ function [mzs_output, ms_references] = msreffind(varargin)
 %             datasets = {};
         end
     else
-        datasets = varargin{1};
-        mzs = varargin{2};
+        disp('finding reference with recalibrated data.')
+        filenames=dir('*.raw');
+        datasets = {};mzs = {};
+        for i = 1:length(filenames)
+            filename = filenames(i).name;
+            [datasets{i},dimes{i},mzs{i}]=h5toMat([filename,'\datacube_recal.h5']);
+%             [~,dimes{i},mzs{i}]=h5toMat([filename,'\datacube.h5']);
+%             datasets = {};
+        end
+        % datasets = varargin{1};
+        % mzs = varargin{2};
     end
     
     for i = 1:length(datasets)
@@ -27,7 +36,7 @@ function [mzs_output, ms_references] = msreffind(varargin)
     mz_recal = mzs_recal{1};
 %     mzs_recal = mzs;
     ms_references = [];
-    [~,locs] = findpeaks(mean(datasets{1}),'MinPeakProminence',mean(mean(datasets{1}))/2);
+    [~,locs] = findpeaks(mean(datasets{1}),'MinPeakProminence',mean(mean(datasets{1}))/3);
     mz_recal_p = mz_recal(locs);
     ms_references(:,1) = mz_recal_p;
     % ms_references(:,1) = mz_recal;
@@ -40,14 +49,14 @@ function [mzs_output, ms_references] = msreffind(varargin)
 
 %     mzs_recal = {};
     for n = 2:length(mzs_recal)
-%     for n = 2:3
-        % disp(n)
+    % for n = 2:10
+        disp(n)
         mz_raw = mzs_recal{n};
 %         mz_raw = mzs{n};
         if size(datasets{n},1) ~= 1
-            [~,locs] = findpeaks(mean(datasets{n}),'MinPeakProminence',mean(mean(datasets{n}))/2);
+            [~,locs] = findpeaks(mean(datasets{n}),'MinPeakProminence',mean(mean(datasets{n}))/3);
         else
-            [~,locs] = findpeaks((datasets{n}),'MinPeakProminence',mean(mean(datasets{n}))/2);
+            [~,locs] = findpeaks((datasets{n}),'MinPeakProminence',mean(mean(datasets{n}))/3);
         end
         mz_raw_p = mz_raw(locs);
     %     [mz_new_p] = MSrecal(mz_raw_p,references, 1000);
@@ -69,6 +78,7 @@ function [mzs_output, ms_references] = msreffind(varargin)
     ms_references(ms_references(:,1)==0,:)=[];
 
     for i = 2:length(mzs_recal)
+        % disp(i)
         dum = mzs_recal{i};
         dum(ms_references(:,i)) = ms_references(:,1);
         mzs_recal{i} = dum;
