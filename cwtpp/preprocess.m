@@ -12,12 +12,19 @@ tic
         % TQ_switch = 'TQ';
         TQ_switch = 0;
     else
-        filenames = varargin{1};
-        if ischar(filenames)
-            filenames = cellstr(filenames);
-        end
-        if nargin > 1
-            TQ_switch = varargin{2};
+        if strcmp(varargin{1},'TQ')
+            TQ_switch = varargin{1};
+            dname = uigetdir();
+            cd (dname);
+            filenames=[dir('*.raw');dir('*.imzml')];
+        else
+            filenames = varargin{1};
+            if ischar(filenames)
+                filenames = cellstr(filenames);
+            end
+            if nargin > 1
+                TQ_switch = varargin{2};
+            end
         end
     end
 %% load in metadata if available

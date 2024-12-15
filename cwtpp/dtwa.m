@@ -45,6 +45,7 @@ function [data_aligned, mz_recal, I] = dtwa(varargin)
                 end
             end
         else
+            mode = 'raw';
             for i = 1:length(filenames)
             filename = filenames(i).name;
             [~,dimes{i},mzs{i}]=h5toMat([filename,'\datacube.h5']);
@@ -89,6 +90,7 @@ function [data_aligned, mz_recal, I] = dtwa(varargin)
         else
             [mzs_recal, ms_references] = msreffind();
         end
+        % [mzs_recal, ms_references] = msreffind();
         mzs = mzs_recal;
         dum2 = mzs;
 %         dum1{1} = datasets{ind1};

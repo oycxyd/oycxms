@@ -1,5 +1,5 @@
 function [raw_specs, dims] = raw2mat(filename)
-% filename = '2019_09_01_porklivertest_100umpixel_neg Analyte 1.raw';
+% load Waters raw data to Work
     [~,p2] = watersPackages(filename);
     numS = calllib('MassLynxRaw','getScansInFunction',p2,1);
 
