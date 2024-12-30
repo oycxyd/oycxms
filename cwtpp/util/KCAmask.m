@@ -4,9 +4,11 @@ function [mask] = KCAmask (data,dims)
     se0 = strel('line',2,0);
     BW2dil = imdilate(Imagekca,[se90 se0]);
     % figure,imagesc(BW2dil);axis image
+    BW2dil(BW2dil==2) = 0;
+    BW2dil(BW2dil==1) = 1;
     BW2 = imfill(BW2dil);
-    BW2(BW2==1) = 0;
-    BW2(BW2==2) = 1;
+    % BW2(BW2==1) = 0;
+    % BW2(BW2==2) = 1;
     mask = BW2;
     figure,imagesc(BW2);axis image
     

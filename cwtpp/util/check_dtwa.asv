@@ -27,11 +27,9 @@ function [mean_specs,mzlens,errors] = check_dtwa(varargin)
     hold on
     scatter(filt,mzlens(filt))
 
-    % bad = filenames(filt);
-    % for i = 1:length(bad)
-    %     badname = bad(i).name;
-    %     movefile(badname,['problematic/',badname])
-    % end
+    bad = filenames(filt);
+    badname = bad(1).name;
+    movefile(badname,newFolder)
 %% check after alignment
     % tic
     % specs_aligned = [];

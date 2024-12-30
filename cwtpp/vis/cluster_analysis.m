@@ -18,14 +18,19 @@ end
 %             MSI
 xsize = dims(1);
 ysize = dims(2);
-Imagekca=reshape(kcadata,[xsize ysize]);
-Image_dum = Imagekca;
-Image_dum=rot90(Image_dum,-1);
-Image_dum=fliplr(Image_dum);
-Imagekca = Image_dum;
+
+if size(input,2) > 3
+    Imagekca=reshape(kcadata,[xsize ysize]);
+    Image_dum = Imagekca;
+    Image_dum=rot90(Image_dum,-1);
+    Image_dum=fliplr(Image_dum);
+    Imagekca = Image_dum;
+else
+    Imagekca=reshape(kcadata,[ysize xsize]);
+end
 
 if plot == 1
-    figure;imagesc(0:xsize,0:ysize,Image_dum);colorMap = jet(256);colormap(colorMap); colorbar;
+    figure;imagesc(0:xsize,0:ysize,Imagekca);colorMap = jet(256);colormap(colorMap); colorbar;
     title(num2str(['KCA image with k = ', num2str(k)]));
     axis image
 end

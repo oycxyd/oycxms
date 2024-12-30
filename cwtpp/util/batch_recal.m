@@ -22,7 +22,8 @@ function batch_recal(varargin)
         [~,dimes{i},mzs{i}]=h5toMat([filename,'\datacube.h5']);
         [mzs_recal{i},ppm] = MSrecal(mzs{i},references, threshold);
         ppms(i) = mean(ppm);
-        h5write([filename,'/datacube.h5'],'/mz',mzs_recal{i})
+        copyfile([filename,'/datacube.h5'],[filename,'/datacube_recal.h5'])
+        h5write([filename,'/datacube_recal.h5'],'/mz',mzs_recal{i})
     end
     disp (['the maximum average ppm after recalibration is ',num2str(max(ppms))])
 end

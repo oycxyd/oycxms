@@ -8,6 +8,10 @@ miscellaneous scripts/codes useful for MS analysis / ZTGROUP
 
 1.	Install Windows SDK7 for Matlab as per instructions here:
 https://uk.mathworks.com/matlabcentral/answers/101105-how-do-i-install-microsoft-windows-sdk-7-1
+
+**files you need (apart from the SDK installer file) can be donwloaded here:**
+https://www.dropbox.com/scl/fo/p27kwayp9mrz3tvqvnh1i/AI3-P76BoJus89o8-6hPlMg?rlkey=0fxxkjjqwoa7uxufmzhn1bhrr&st=kx5rbzsc&dl=0
+
 *Note that the second answer (not the ‘accepted’) by Andre Silva is the more useful in most cases, in summary:
 
 - Remove programs > uninstall Visual studios C++ (all of them)
@@ -20,7 +24,7 @@ https://uk.mathworks.com/matlabcentral/answers/101105-how-do-i-install-microsoft
 press ok on the warning, make sure you untick "Visual C++ Compilers" and "Microsoft Visual C++ 2010" components.
 
 - Install 
-NDP452-KB2901907-x86-x64-AllOS-ENU.(**.net installation**)* _if the installation states that you already have this installed (most likely for modern Windows), then you can skip this
+NDP452-KB2901907-x86-x64-AllOS-ENU.(**.net installation**)* _**if the installation states that you already have this installed (most likely for modern Windows) or fails to install, then you can skip this**
 
 - VC-Compiler-KB2519277.exe (SDK patches)
 
