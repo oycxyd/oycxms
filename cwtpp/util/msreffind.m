@@ -33,7 +33,11 @@ function [mzs_output, ms_references] = msreffind(varargin)
     % ms_references(:,1) = mz_recal;
 
     if nargin < 2
+<<<<<<< Updated upstream
         threshold = 1000;
+=======
+        threshold = 3000;
+>>>>>>> Stashed changes
     else
         threshold = varargin{2};
     end
