@@ -15,16 +15,15 @@ function [data_aligned, mz_recal, I] = dtwa(varargin)
         save = 1;
     else
         dname = varargin{1};
-        cd (dname);
+        try
+            cd (dname);
+        catch
+            varargin{3} = 'workspace';
+        end
         filenames=dir('*.raw');
         datasets = {};mzs = {};
         
-        if nargin < 2
-            save = 0;
-        else
-            save = varargin{2};
-        end
-        if nargin > 2
+        if nargin >= 2
             mode = varargin{3};
             if strcmp(mode, 'msp')
                 disp('using resampled data.')
@@ -34,6 +33,7 @@ function [data_aligned, mz_recal, I] = dtwa(varargin)
     %             [~,dimes{i},mzs{i}]=h5toMat([filename,'\datacube.h5']);
     %             datasets = {};
                 end
+                save = 1;
             end
             if strcmp(mode, 'recal')
                 disp('using recalibrated data.')
@@ -43,6 +43,13 @@ function [data_aligned, mz_recal, I] = dtwa(varargin)
     %             [~,dimes{i},mzs{i}]=h5toMat([filename,'\datacube.h5']);
     %             datasets = {};
                 end
+                save = 1;
+            end
+            if strcmp(mode, 'workspace')
+                disp('using defined workspace data.')
+                datasets = varargin{1};
+                mzs = varargin{2};
+                save = 0;
             end
         else
             mode = 'raw';
@@ -52,6 +59,7 @@ function [data_aligned, mz_recal, I] = dtwa(varargin)
 %             [~,dimes{i},mzs{i}]=h5toMat([filename,'\datacube.h5']);
 %             datasets = {};
             end
+            save = 1;
         end
     end
     
@@ -73,7 +81,7 @@ function [data_aligned, mz_recal, I] = dtwa(varargin)
             disp([answer ' Aborted.'])
     end
     
-    for i = 1:length(filenames)
+    for i = 1:length(mzs)
         lens(i) = length(mzs{i});
     end
     
@@ -87,6 +95,9 @@ function [data_aligned, mz_recal, I] = dtwa(varargin)
         % dum2 = mzs;
         if strcmp(mode, 'recal')
             [mzs_recal, ms_references] = msreffind('recal');
+        end
+        if strcmp(mode, 'workspace')
+            [mzs_recal, ms_references] = msreffind('workspace',datasets,mzs);
         else
             [mzs_recal, ms_references] = msreffind();
         end
@@ -157,9 +168,13 @@ function [data_aligned, mz_recal, I] = dtwa(varargin)
 %     end
 %% DTW-based alignment
     mz_recal = mzs{1};
-
-    [data1]=h5toMat([filenames(I(1)).name,'\datacube.h5']);
-    filename = filenames(I(1)).name;
+    if strcmp(mode,'workspace')
+        [data1] = datasets{1};
+        data_aligned{1} = data1;
+    else
+        [data1]=h5toMat([filenames(I(1)).name,'\datacube.h5']);
+        filename = filenames(I(1)).name;
+    end
     if save == 1
         if isfile([filename,'/datacube_aligned.h5']) == 0
             h5create([filename,'/datacube_aligned.h5'],'/datacube',size(data1))
@@ -185,8 +200,12 @@ function [data_aligned, mz_recal, I] = dtwa(varargin)
     % mz2_length = zeros(length(mzs),1);
     for n = 1:length(mzs)-1
         disp(['aligining file ',num2str(n),'/',num2str(length(mzs)-1)])
-        filename = filenames(I(n+1)).name;
-        data2 = h5toMat([filename,'\datacube.h5']);
+        if strcmp(mode,'workspace')
+            data2 = datasets{n+1};
+        else
+            filename = filenames(I(n+1)).name;
+            data2 = h5toMat([filename,'\datacube.h5']);
+        end
         % data_length(n) = size(data2,2);
         mz2 = mzs{n+1};
         % mz2_length(n) = length(mz2);
@@ -226,6 +245,8 @@ function [data_aligned, mz_recal, I] = dtwa(varargin)
                 h5write([filename,'/datacube_aligned.h5'],'/mz',mz_recal)
                 h5write([filename,'/datacube_aligned.h5'],'/dims',dimes{I(n+1)})
             end
+        else
+            data_aligned{n+1} = data_dtw;
         end
         clear data_dtw
         counter1.Destroy

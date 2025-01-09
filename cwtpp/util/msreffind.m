@@ -10,20 +10,37 @@ function [mzs_output, ms_references] = msreffind(varargin)
 %             [~,dimes{i},mzs{i}]=h5toMat([filename,'\datacube.h5']);
 %             datasets = {};
         end
+        threshold = 1000;
     else
-        disp('finding reference with recalibrated data.')
-        filenames=dir('*.raw');
-        datasets = {};mzs = {};
-        for i = 1:length(filenames)
-            filename = filenames(i).name;
-            [datasets{i},dimes{i},mzs{i}]=h5toMat([filename,'\datacube_recal.h5']);
-%             [~,dimes{i},mzs{i}]=h5toMat([filename,'\datacube.h5']);
-%             datasets = {};
+        mode = varargin{1};
+        if strcmp(mode,'recal')
+            disp('finding reference with recalibrated data.')
+            filenames=dir('*.raw');
+            datasets = {};mzs = {};
+            for i = 1:length(filenames)
+                filename = filenames(i).name;
+                [datasets{i},dimes{i},mzs{i}]=h5toMat([filename,'\datacube_recal.h5']);
+    %             [~,dimes{i},mzs{i}]=h5toMat([filename,'\datacube.h5']);
+    %             datasets = {};
+            end
+            if nargin > 1
+                threshold = varargin{2};
+            else
+                threshold = 1000;
+            end
         end
-        % datasets = varargin{1};
-        % mzs = varargin{2};
+        if strcmp(mode,'workspace')
+            datasets = varargin{2};
+            mzs = varargin{3};
+            if nargin > 3
+                threshold = varargin{4};
+            else
+                threshold = 1000;
+            end
+        end
+
     end
-    
+  
     for i = 1:length(datasets)
        lens(i) = size(datasets{i},2);
     end
@@ -41,6 +58,7 @@ function [mzs_output, ms_references] = msreffind(varargin)
     ms_references(:,1) = mz_recal_p;
     % ms_references(:,1) = mz_recal;
 
+<<<<<<< Updated upstream
     if nargin < 2
 <<<<<<< Updated upstream
         threshold = 1000;
@@ -51,10 +69,12 @@ function [mzs_output, ms_references] = msreffind(varargin)
         threshold = varargin{2};
     end
 
+=======
+>>>>>>> Stashed changes
 %     mzs_recal = {};
     for n = 2:length(mzs_recal)
     % for n = 2:10
-        disp(n)
+        % disp(n)
         mz_raw = mzs_recal{n};
 %         mz_raw = mzs{n};
         if size(datasets{n},1) ~= 1
@@ -69,6 +89,7 @@ function [mzs_output, ms_references] = msreffind(varargin)
     %     [mz_new] = MSrecal(mz_raw,references, 1000);
     %     mzs_recal{n} = mz_new;
         for m = 1:size(ms_references,1)
+                % disp(m)
                 [diff, ind] = min( abs(mz_raw_p-ms_references(m,1)) );
                 ppm = diff/ms_references(m,1)*10^6;
                 if ppm <= threshold
