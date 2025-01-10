@@ -3,12 +3,9 @@
 
 function [Image_dum,ppm] = ion_image(feature, mz, data, dims, plot_on_off,contrast)
     if nargin < 6, contrast = 1; end
-    if length(unique(mz)) < length(mz)
-        ind = feature;
-    else
-        [ppm, ind] = min( abs(mz-feature) );
-        ppm = ppm/feature*1e6;
-    end
+    if length(unique(mz))
+    [ppm, ind] = min( abs(mz-feature) );
+    ppm = ppm/feature*1e6;
 %     data = data';
     if size(data,3) > 1
         Image_dum = data(:,:,ind);

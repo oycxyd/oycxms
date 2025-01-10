@@ -182,7 +182,7 @@ tic
         switch answer
             case 'Yes'
                 disp([answer ' OK.'])
-                dtwa(dname,1);
+                dtwa(dname);
             case 'No'
                 disp([answer ' OK.'])
             case 'Cancel'
