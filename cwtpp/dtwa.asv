@@ -91,7 +91,7 @@ function [data_aligned, mz_recal, I] = dtwa(varargin)
         mean_length=max(lens);
         [~,ind1]=min(abs(lens-mean_length));
         I = 1:length(mzs);
-        dum1 = datasets;
+%         dum1 = datasets;
         % dum2 = mzs;
         if strcmp(mode, 'recal')
             [mzs_recal, ms_references] = msreffind('recal');
@@ -104,15 +104,15 @@ function [data_aligned, mz_recal, I] = dtwa(varargin)
         % [mzs_recal, ms_references] = msreffind();
         mzs = mzs_recal;
         dum2 = mzs;
-        dum1{1} = datasets{ind1};
+        % dum1{1} = datasets{ind1};
         dum2{1} = mzs{ind1};
-        dum1{ind1} = datasets{1};
+        % dum1{ind1} = datasets{1};
         dum2{ind1} = mzs{1};
-        datasets = dum1;
+        % datasets = dum1;
         mzs = dum2;
         I(1) = ind1;
         I(ind1) = 1;
-        clear dum1
+        % clear dum1
         clear dum2
         disp('using the following reference masses: ')
         disp([num2str(ms_references)])

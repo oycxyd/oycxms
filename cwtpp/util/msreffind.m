@@ -59,11 +59,12 @@ function [mzs_output, ms_references] = msreffind(varargin)
     % ms_references(:,1) = mz_recal;
 
 
-    if nargin < 2
-        threshold = 1000;
-    else
-        threshold = varargin{2};
-    end
+    % if nargin < 3
+    %     threshold = 1000;
+    %     disp('default ppm = 1000')
+    % else
+    %     threshold = varargin{2};
+    % end
 
 %     mzs_recal = {};
     for n = 2:length(mzs_recal)
