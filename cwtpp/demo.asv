@@ -1,0 +1,103 @@
+%% A demo script to do demonstrate basic preprocessing, QC,  unsupervised analysis/visualisation 
+clc; close all; clear all
+%% master function for preprocessing
+preprocess();
+
+% use TQ handle to indicate TQ data (no peak detection), can also use for
+% high-res, high SNR data e.g., from Orbitrap
+preprocess('TQ')
+
+% to preprocess (multi) 1D files, first auto-generate the metadata file (or
+% manually if you wish), then preprocess() using the metadata. You can
+% ultimately generate a csv data matrix by using h5toCSV()
+scan_detect();preprocess();
+
+%% load in preprocessed data and QC
+[data,dims,mz] = h5toMat(['datacube.h5']);
+figure,stem(mz,mean(data),'Marker','None')
+
+% use a lock mass to recalibrate
+batch_recal(1800,[255.2324]);
+
+% align the recalibrated data to each other
+dtwa(pwd,1,'recal');
+
+% compare alignements by mean spectra vs by common reference masses
+figure,plot(mz1,mean_spec1./max(mean_spec1(:)),mz2,mean_spec2./max(mean_spec2(:))+1)
+
+%% generate a mask using KCA segmentation
+
+% normalise first
+data_norm = log_trans(TIC_norm(data));
+
+% try auto-masking function
+KCAmask(data_norm,dims);
+
+% can also do this manually by KCA segmentation
+[kcadata,Imagekca,C] = cluster_analysis((data_norm),dims,3);
+mask = (kcadata==1|kcadata==3);% here cluster 2 & 3, check cluster images accordingly
+mask = reshape(mask,dims);
+% mask = imfill(mask,'holes');
+figure,imagesc(mask);axis image
+
+%% filter data matrix with mask & do unsupervised visualisation (dimension reduction + segmentation)
+data_r = data_norm;
+data_r(~mask,:) = 0;
+output = component_analysis((data_r),3,dims);% here set to show first 3 components, can change accordingly
+
+% let's look a bit closer at the dimensionally-reduced data
+components = output{1};
+scores = output{2};
+
+% first plot all the components
+figure,plot(mz,components(:,1)./-max(components(:,1)),'r', ...
+    mz,components(:,2)./-max(components(:,2))*2,'g', ...
+    mz,components(:,3)./-max(components(:,3))*3,'b')
+
+% now overlay the abundance images by first reshaping the scores and then
+% rgbimage
+
+% reshape & assign scores into a RGB (3-channels) image
+images = cat(3,(fliplr(rot90(reshape(scores(1,:),dims),-1))), ...
+    (fliplr(rot90(reshape(scores(2,:),dims),-1))), ...
+    (fliplr(rot90(reshape(scores(3,:),dims),-1))));
+RGBimage(images,dims);
+% choose the combination that matches components colours for
+% low-dimenstional visualisation
+
+% segmentation (you can choose the number of segements or let the algorithm
+% determine the optimal number by leaving it blank)
+[kcadata,Imagekca,C] = cluster_analysis((data),dims);% k=?
+[kcadata,Imagekca,C] = cluster_analysis((data),dims,5);% k = 5
+
+%% more advanced image analyses & multi-modal integration
+
+% co-registration
+
+% first load in the optical image & reshape to same dimension as MSI
+BF = im2double(imread('A30.jpg'));
+BF = cat(3,imresize(BF(:,:,1),dims),imresize(BF(:,:,2),dims),imresize(BF(:,:,3),dims));
+figure,imshow(BF)
+
+% generate a tissue mask just as before
+[BF_mask] = KCAmask((reshape(BF,[dims(1)*dims(2),3])),dims);
+
+% define 'moving' & 'fixed' images and start co-reg routine
+moving = sum(BF,3).*BF_mask;
+fixed = TICimg(data,dims,0).*mask';
+[image_out, tforms] = coreg_routine(moving,fixed);
+
+% visualise results - here BF vs an ion image
+ion = ion_image(726.54,mz,data,dims,0,'magma');
+BG = cast(255.*image_out,'uint8'); 
+FG = cast(255.*(ion)./max(ion(:)),'uint8');
+idx = (FG ~= 0);
+
+figure,
+subplot(1,3,1)
+imshow(BGi);
+BGi = ind2rgb(BG,gray);
+FGi = ind2rgb(FG,hot);
+BG = imshow(BGi); hold on; FG = imshow(FGi);
+set(FG,'AlphaData', 0.4); 
+% co-localisation

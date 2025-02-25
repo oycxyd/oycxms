@@ -1,7 +1,8 @@
-function [mz_f,data_f] = merge_peaks(mz,data)
+function [mz_f,data_f] = merge_peaks(mz,data,thresh)
+if nargin < 3, thresh=0.01; end
 test = diff(mz);
 test = cat(2,1,test);
-indc = (test>0.01);
+indc = (test>thresh);
 
 mz_f = [];data_f = [];
 counter1 = parfor_wait(length(indc), 'Waitbar', true);

@@ -81,7 +81,12 @@ tic
     try
         if ischar(TQ_switch)
             disp('TQ data!')
-            [cwtpeaks,dims] = raw2mat(filename);
+            if contains(filename,'.raw')
+                [cwtpeaks,dims] = raw2mat(filename);
+            else
+                disp('imzml')
+                [cwtpeaks,dims] = load_imzml(filename);
+            end
             mode = '.raw';
         else
             if use_metadata == 1
@@ -131,21 +136,41 @@ tic
     
 %% save datacube to h5
         if strcmp(mode,'.raw')
-            if isfile([filename,'/datacube.h5']) == 0
-                h5create([filename,'/datacube.h5'],'/datacube',size(specs_interp))
-                h5create([filename,'/datacube.h5'],'/mz',size(global_mz));
-                h5create([filename,'/datacube.h5'],'/dims',size(dims));
-                h5write([filename,'/datacube.h5'],'/datacube',specs_interp)
-                h5write([filename,'/datacube.h5'],'/mz',global_mz)
-                h5write([filename,'/datacube.h5'],'/dims',dims)
+            if contains(filename,'.raw')
+                if isfile([filename,'/datacube.h5']) == 0
+                    h5create([filename,'/datacube.h5'],'/datacube',size(specs_interp))
+                    h5create([filename,'/datacube.h5'],'/mz',size(global_mz));
+                    h5create([filename,'/datacube.h5'],'/dims',size(dims));
+                    h5write([filename,'/datacube.h5'],'/datacube',specs_interp)
+                    h5write([filename,'/datacube.h5'],'/mz',global_mz)
+                    h5write([filename,'/datacube.h5'],'/dims',dims)
+                else
+                    delete([filename,'/datacube.h5'])
+                    h5create([filename,'/datacube.h5'],'/datacube',size(specs_interp))
+                    h5create([filename,'/datacube.h5'],'/mz',size(global_mz));
+                    h5create([filename,'/datacube.h5'],'/dims',size(dims));
+                    h5write([filename,'/datacube.h5'],'/datacube',specs_interp)
+                    h5write([filename,'/datacube.h5'],'/mz',global_mz)
+                    h5write([filename,'/datacube.h5'],'/dims',dims)
+                end
             else
-                delete([filename,'/datacube.h5'])
-                h5create([filename,'/datacube.h5'],'/datacube',size(specs_interp))
-                h5create([filename,'/datacube.h5'],'/mz',size(global_mz));
-                h5create([filename,'/datacube.h5'],'/dims',size(dims));
-                h5write([filename,'/datacube.h5'],'/datacube',specs_interp)
-                h5write([filename,'/datacube.h5'],'/mz',global_mz)
-                h5write([filename,'/datacube.h5'],'/dims',dims)
+                disp('check')
+                if isfile(['datacube.h5']) == 0
+                    h5create(['datacube.h5'],'/datacube',size(specs_interp))
+                    h5create(['datacube.h5'],'/mz',size(global_mz));
+                    h5create(['datacube.h5'],'/dims',size(dims));
+                    h5write(['datacube.h5'],'/datacube',specs_interp)
+                    h5write(['datacube.h5'],'/mz',global_mz)
+                    h5write(['datacube.h5'],'/dims',dims)
+                else
+                    delete(['datacube.h5'])
+                    h5create(['datacube.h5'],'/datacube',size(specs_interp))
+                    h5create(['datacube.h5'],'/mz',size(global_mz));
+                    h5create(['datacube.h5'],'/dims',size(dims));
+                    h5write(['datacube.h5'],'/datacube',specs_interp)
+                    h5write(['datacube.h5'],'/mz',global_mz)
+                    h5write(['datacube.h5'],'/dims',dims)
+                end
             end
         else
             if isfile(['datacube.h5']) == 0

@@ -87,8 +87,8 @@ function [data_aligned, mz_recal, I] = dtwa(varargin)
     
     if strcmp(method,'mz')
         disp('aligning to median length axis')
-        % mean_length=median(lens);
-        mean_length=max(lens);
+        mean_length=median(lens);
+        % mean_length=max(lens);
         [~,ind1]=min(abs(lens-mean_length));
         I = 1:length(mzs);
         dum1 = datasets;
