@@ -12,6 +12,7 @@ preprocess('TQ')
 % ultimately generate a csv data matrix by using h5toCSV()
 scan_detect();preprocess();
 
+
 %% load in preprocessed data and QC
 [data,dims,mz] = h5toMat(['datacube.h5']);
 figure,stem(mz,mean(data),'Marker','None')
@@ -25,6 +26,8 @@ dtwa(pwd,1,'recal');
 % compare alignements by mean spectra vs by common reference masses
 figure,plot(mz1,mean_spec1./max(mean_spec1(:)),mz2,mean_spec2./max(mean_spec2(:))+1)
 
+% generate CSV after alignment
+h5toCSV();
 %% generate a mask using KCA segmentation
 
 % normalise first
