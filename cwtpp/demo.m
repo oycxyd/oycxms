@@ -5,12 +5,13 @@ preprocess();
 
 % use TQ handle to indicate TQ data (no peak detection), can also use for
 % high-res, high SNR data e.g., from Orbitrap
-preprocess('TQ')
+preprocess('TQ');
 
 % to preprocess (multi) 1D files, first auto-generate the metadata file (or
 % manually if you wish), then preprocess() using the metadata. You can
 % ultimately generate a csv data matrix by using h5toCSV()
-scan_detect();preprocess();
+scan_detect();
+preprocess();
 
 
 %% load in preprocessed data and QC
@@ -38,7 +39,7 @@ KCAmask(data_norm,dims);
 
 % can also do this manually by KCA segmentation
 [kcadata,Imagekca,C] = cluster_analysis((data_norm),dims,3);
-mask = (kcadata==1|kcadata==3);% here cluster 2 & 3, check cluster images accordingly
+mask = (kcadata==2|kcadata==3);% here cluster 2 & 3, check cluster images accordingly
 mask = reshape(mask,dims);
 % mask = imfill(mask,'holes');
 figure,imagesc(mask);axis image
@@ -91,7 +92,7 @@ fixed = TICimg(data,dims,0).*mask';
 [image_out, tforms] = coreg_routine(moving,fixed);
 
 % visualise results - here BF vs an ion image
-ion = ion_image(726.54,mz,data,dims,0,'magma');
+ion = ion_image(726.54,mz,data,dims,1,'magma');
 
 BG = cast(255.*image_out,'uint8'); 
 FG = cast(255.*(ion)./max(ion(:)),'uint8');

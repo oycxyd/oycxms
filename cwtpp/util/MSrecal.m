@@ -11,7 +11,8 @@ function [new_mz,ppms2,coefs] = MSrecal(mz_raw,references, threshold)
         [diff,ind] = min( abs(mz_raw-references(1)) );
         ppms1 = diff/references(1)*10^6;
         if ppms1 <= threshold
-            new_mz = mz_raw-(mz_raw(ind)-references(1));
+            shift = mz_raw(ind)-references(1);
+            new_mz = mz_raw-shift;
             ppms2 = ppms1;
             disp(['the average ppm after correction is ', num2str((ppms2))])
         else
@@ -32,7 +33,11 @@ function [new_mz,ppms2,coefs] = MSrecal(mz_raw,references, threshold)
                 % ppms1 = ppms1';
             disp(['the average ppm before correction is ', num2str(mean(ppms1))])
     
-            n = 3;
+            if length(references)<5
+                n = 3;
+            else
+                n = 5;
+            end
             [~, ~,~,coefs]=peakfit([x y],0,0,1,28,n,1,0,0,0,0);
     
             % [dist] = dtw(x,references);
@@ -62,7 +67,6 @@ function [new_mz,ppms2,coefs] = MSrecal(mz_raw,references, threshold)
             else
                 stop = 1;
                 new_mz = mz_raw;
-                ppms2 = ppms1;
             end
         end
     end
