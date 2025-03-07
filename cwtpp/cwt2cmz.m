@@ -10,6 +10,7 @@ function [pks] = cwt2cmz(cwt,varargin)
 %   minFreq - scalar value, minimum number of times a peak must appear
 %   mzRange - [1 x 2] of low and high m/z values
 %   mzRes - fractional value for m/z resolution
+%   plot - true/false value for plotting figure on complet
 %
 %   OUTPUT
 %   pks - a vector of peaks that satisfy the requirements
