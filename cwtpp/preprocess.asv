@@ -1,6 +1,6 @@
 %% new preprocessing workflow
 %% MAIN FUNCTION
-function [aligned_peaks, cmz, cwtpeaks] = preprocess(varargin)
+function [specs_interp, global_mz, cwtpeaks] = preprocess(varargin)
 
 tic
 %% load in raw data
@@ -113,72 +113,75 @@ tic
 %% check mean spec & TIC image
         if use_metadata ~= 1
             try
-                TIC_image = TICimg(aligned_peaks,dims,0);
+                TIC_image = TICimg(specs_interp,dims,0);
                 figure      
                 subplot(1,2,1);
                 imagesc(TIC_image);axis image;colormap('magma');
                 title('TIC image', 'Interpreter', 'none')
                 subplot(1,2,2);
-                stem(cmz,mean(aligned_peaks),'Marker','none');
+                stem(global_mz,mean(specs_interp),'Marker','none');
                 title(filename, 'Interpreter', 'none')
             catch
                 % continue
             end
         end
+        
+        
+
     
 %% save datacube to h5
         if strcmp(mode,'.raw')
             if contains(filename,'.raw')
                 if isfile([filename,'/datacube.h5']) == 0
-                    h5create([filename,'/datacube.h5'],'/datacube',size(aligned_peaks))
-                    h5create([filename,'/datacube.h5'],'/mz',size(cmz));
+                    h5create([filename,'/datacube.h5'],'/datacube',size(specs_interp))
+                    h5create([filename,'/datacube.h5'],'/mz',size(global_mz));
                     h5create([filename,'/datacube.h5'],'/dims',size(dims));
-                    h5write([filename,'/datacube.h5'],'/datacube',aligned_peaks)
-                    h5write([filename,'/datacube.h5'],'/mz',cmz)
+                    h5write([filename,'/datacube.h5'],'/datacube',specs_interp)
+                    h5write([filename,'/datacube.h5'],'/mz',global_mz)
                     h5write([filename,'/datacube.h5'],'/dims',dims)
                 else
                     delete([filename,'/datacube.h5'])
-                    h5create([filename,'/datacube.h5'],'/datacube',size(aligned_peaks))
-                    h5create([filename,'/datacube.h5'],'/mz',size(cmz));
+                    h5create([filename,'/datacube.h5'],'/datacube',size(specs_interp))
+                    h5create([filename,'/datacube.h5'],'/mz',size(global_mz));
                     h5create([filename,'/datacube.h5'],'/dims',size(dims));
-                    h5write([filename,'/datacube.h5'],'/datacube',aligned_peaks)
-                    h5write([filename,'/datacube.h5'],'/mz',cmz)
+                    h5write([filename,'/datacube.h5'],'/datacube',specs_interp)
+                    h5write([filename,'/datacube.h5'],'/mz',global_mz)
                     h5write([filename,'/datacube.h5'],'/dims',dims)
                 end
             else
                 disp('check')
                 if isfile(['datacube.h5']) == 0
-                    h5create(['datacube.h5'],'/datacube',size(aligned_peaks))
-                    h5create(['datacube.h5'],'/mz',size(cmz));
+                    h5create(['datacube.h5'],'/datacube',size(specs_interp))
+                    h5create(['datacube.h5'],'/mz',size(global_mz));
                     h5create(['datacube.h5'],'/dims',size(dims));
-                    h5write(['datacube.h5'],'/datacube',aligned_peaks)
-                    h5write(['datacube.h5'],'/mz',cmz)
+                    h5write(['datacube.h5'],'/datacube',specs_interp)
+                    h5write(['datacube.h5'],'/mz',global_mz)
                     h5write(['datacube.h5'],'/dims',dims)
                 else
                     delete(['datacube.h5'])
-                    h5create(['datacube.h5'],'/datacube',size(aligned_peaks))
-                    h5create(['datacube.h5'],'/mz',size(cmz));
+                    h5create(['datacube.h5'],'/datacube',size(specs_interp))
+                    h5create(['datacube.h5'],'/mz',size(global_mz));
                     h5create(['datacube.h5'],'/dims',size(dims));
-                    h5write(['datacube.h5'],'/datacube',aligned_peaks)
-                    h5write(['datacube.h5'],'/mz',cmz)
+                    h5write(['datacube.h5'],'/datacube',specs_interp)
+                    h5write(['datacube.h5'],'/mz',global_mz)
                     h5write(['datacube.h5'],'/dims',dims)
                 end
             end
         else
             if isfile(['datacube.h5']) == 0
-                h5create(['datacube.h5'],'/datacube',size(aligned_peaks))
-                h5create(['datacube.h5'],'/mz',size(cmz));
+                h5create(['datacube.h5'],'/datacube',size(specs_interp))
+                h5create(['datacube.h5'],'/mz',size(global_mz));
                 h5create(['datacube.h5'],'/dims',size(dims));
-                h5write(['datacube.h5'],'/datacube',aligned_peaks)
-                h5write(['datacube.h5'],'/mz',cmz)
+                h5write(['datacube.h5'],'/datacube',specs_interp)
+                h5write(['datacube.h5'],'/mz',global_mz)
                 h5write(['datacube.h5'],'/dims',dims)
             else
                 delete(['datacube.h5'])
-                h5create(['datacube.h5'],'/datacube',size(aligned_peaks))
-                h5create(['datacube.h5'],'/mz',size(cmz));
+                h5create(['datacube.h5'],'/datacube',size(specs_interp))
+                h5create(['datacube.h5'],'/mz',size(global_mz));
                 h5create(['datacube.h5'],'/dims',size(dims));
-                h5write(['datacube.h5'],'/datacube',aligned_peaks)
-                h5write(['datacube.h5'],'/mz',cmz)
+                h5write(['datacube.h5'],'/datacube',specs_interp)
+                h5write(['datacube.h5'],'/mz',global_mz)
                 h5write(['datacube.h5'],'/dims',dims)
             end
         end

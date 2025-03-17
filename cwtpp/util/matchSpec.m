@@ -1,0 +1,41 @@
+function [cmz,aligned_peaks] = matchSpec(cwtpeaks)
+% using cwt2cmz (James McKenzie) to find a common m/z axis 
+% and match intensities from all scans/pixels
+
+%% load in detected peaks & initialise parameters
+% mzs = cellfun(@(x) x(1,:), cwtpeaks, 'UniformOutput', false);
+% datasets = cellfun(@(x) x(2,:), cwtpeaks, 'UniformOutput', false);
+% tic
+shifts = [];
+% quick look at number of common peaks that are found on >5% of data within
+% various ppm windows (50-800)
+for i = 1:16
+    [pks] = cwt2cmz(cwtpeaks,'ppm',i*50,'mzRange',[50 1200], ...
+        'minFreq',round(length(cwtpeaks)*0.05));
+    shifts(i) = length(pks);
+end
+% figure,plot(50:50:800,shifts)
+
+% define ppm threshold as that at which max. of peaks is detected (by
+% cwtpp)
+[thresh] = knee_pt(shifts,50:50:800);
+% [~,ind] = min(shifts - max(cellfun(@length, cwtpeaks)));[thresh] = 50*ind;
+disp(['matching peaks using an estimated ppm of ',num2str(thresh)])
+[cmz] = cwt2cmz(cwtpeaks,'ppm',thresh,'mzRange',[50 1200], ...
+    'minFreq',round(length(cwtpeaks)*0.05));
+
+%% match peaks from all pixels
+aligned_peaks = [];
+M = length(cwtpeaks);N = length(cmz);
+parfor m = 1:M
+    for n = 1:N
+        dum = cwtpeaks{m};
+        [inds]=(abs(dum(1,:)-cmz(n)))/cmz(n)*1e6 <= thresh;
+        if isempty(find(inds,1)) == 0
+            aligned_peaks(m,n) = sum(dum(2,inds));
+        else
+            aligned_peaks(m,n) = 0;
+        end
+    end
+end
+% toc

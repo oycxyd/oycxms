@@ -53,10 +53,14 @@ function [mzs_output, ms_references] = msreffind(varargin)
     mz_recal = mzs_recal{1};
 %     mzs_recal = mzs;
     ms_references = [];
-    [~,locs] = findpeaks(mean(datasets{1}),'MinPeakProminence',mean(mean(datasets{1}))/3);
-    mz_recal_p = mz_recal(locs);
-    ms_references(:,1) = mz_recal_p;
-    % ms_references(:,1) = mz_recal;
+    if strcmp(mode,'workspace')
+         ms_references(:,1) = mz_recal;
+    else 
+        [~,locs] = findpeaks(mean(datasets{1}),'MinPeakProminence',mean(mean(datasets{1}))/3);
+        mz_recal_p = mz_recal(locs);
+        ms_references(:,1) = mz_recal_p;
+    end
+   
 
 
     % if nargin < 3

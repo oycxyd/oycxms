@@ -26,12 +26,12 @@ p.addParameter('mzRange',[100 1000],@isnumeric);
 p.addParameter('mzRes',0.001,@isnumeric);
 p.addParameter('plot',false,@islogical);
 p.parse(varargin{:});
-p.Results
+% p.Results
 
 % Standard error checking
 assert(numel(p.Results.mzRange) == 2,'Specify low and high m/z values');
 assert(p.Results.mzRange(1) < p.Results.mzRange(2),'Specify low m/z value first');
-assert(isfield(cwt,'list_of_peaks'),'Incorrect `cwt` input format');
+% assert(isfield(cwt,'list_of_peaks'),'Incorrect `cwt` input format');
 
 % Create mz vector
 mzVec = p.Results.mzRange(1):p.Results.mzRes:p.Results.mzRange(2);
@@ -47,7 +47,7 @@ lm = @(x) x > [x(2:end) NaN] & x > [NaN x(1:end-1)];
 
 % These are the peaks with a frequency above the cut off
 pp = sm2 >= p.Results.minFreq & lm(sm2);
-disp(['Number of peaks = ' int2str(sum(pp))]);
+% disp(['Number of peaks = ' int2str(sum(pp))]);
 
 % Output the final vector of picked peaks
 pks = mzVec(pp);
@@ -72,7 +72,7 @@ function [fq] = peakFreq(cwt,mzVec,mzRes)
 f1 = @(x) round((x-mzVec(1)) / mzRes) + 1;
 
 % Combine all peaks
-h = horzcat(cwt.list_of_peaks{:});
+h = horzcat(cwt{:});
 h = sort(h(1,:))';
 
 % Trim out m/z values outside the range
