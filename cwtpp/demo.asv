@@ -5,7 +5,7 @@ preprocess();
 
 % use TQ handle to indicate TQ data (no peak detection), can also use for
 % high-res, high SNR data e.g., from Orbitrap
-preprocess('TQ')
+preprocess('TQ');
 
 % to preprocess (multi) 1D files, first auto-generate the metadata file (or
 % manually if you wish), then preprocess() using the metadata. You can
@@ -39,14 +39,15 @@ KCAmask(data_norm,dims);
 
 % can also do this manually by KCA segmentation
 [kcadata,Imagekca,C] = cluster_analysis((data_norm),dims,3);
-mask = (kcadata==1|kcadata==3);% here cluster 2 & 3, check cluster images accordingly
+mask = (kcadata==2|kcadata==3);% here cluster 2 & 3, check cluster images accordingly
 mask = reshape(mask,dims);
 % mask = imfill(mask,'holes');
 figure,imagesc(mask);axis image
 
 %% filter data matrix with mask & do unsupervised visualisation (dimension reduction + segmentation)
-data_r = data_norm;
+data_r = data;
 data_r(~mask,:) = 0;
+data_r = 
 output = component_analysis((data_r),3,dims);% here set to show first 3 components, can change accordingly
 
 % let's look a bit closer at the dimensionally-reduced data
@@ -71,8 +72,8 @@ RGBimage(images,dims);
 
 % segmentation (you can choose the number of segements or let the algorithm
 % determine the optimal number by leaving it blank)
-[kcadata,Imagekca,C] = cluster_analysis((data),dims);% k=?
-[kcadata,Imagekca,C] = cluster_analysis((data),dims,5);% k = 5
+[kcadata,Imagekca,C] = cluster_analysis((data_norm),dims);% k=?
+[kcadata,Imagekca,C] = cluster_analysis((data_norm),dims,5);% k = 5
 
 %% more advanced image analyses & multi-modal integration
 
@@ -92,7 +93,7 @@ fixed = TICimg(data,dims,0).*mask';
 [image_out, tforms] = coreg_routine(moving,fixed);
 
 % visualise results - here BF vs an ion image
-ion = ion_image(726.54,mz,data,dims,0,'magma');
+ion = ion_image(726.54,mz,data,dims,1,'magma');
 
 BG = cast(255.*image_out,'uint8'); 
 FG = cast(255.*(ion)./max(ion(:)),'uint8');

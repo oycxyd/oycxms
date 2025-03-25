@@ -26,7 +26,7 @@ dtwa(pwd,1,'recal');
 
 % compare alignements by mean spectra vs by common reference masses
 figure,plot(mz1,mean_spec1./max(mean_spec1(:)),mz2,mean_spec2./max(mean_spec2(:))+1)
-
+legend('mean spectrum method','reference masses method')
 % generate CSV after alignment
 h5toCSV();
 %% generate a mask using KCA segmentation
@@ -45,8 +45,9 @@ mask = reshape(mask,dims);
 figure,imagesc(mask);axis image
 
 %% filter data matrix with mask & do unsupervised visualisation (dimension reduction + segmentation)
-data_r = data_norm;
+data_r = data;
 data_r(~mask,:) = 0;
+data_r =  log_trans(TIC_norm(data_r));
 output = component_analysis((data_r),3,dims);% here set to show first 3 components, can change accordingly
 
 % let's look a bit closer at the dimensionally-reduced data
@@ -71,8 +72,8 @@ RGBimage(images,dims);
 
 % segmentation (you can choose the number of segements or let the algorithm
 % determine the optimal number by leaving it blank)
-[kcadata,Imagekca,C] = cluster_analysis((data),dims);% k=?
-[kcadata,Imagekca,C] = cluster_analysis((data),dims,5);% k = 5
+[kcadata,Imagekca,C] = cluster_analysis((data_r),dims);% k=?
+[kcadata,Imagekca,C] = cluster_analysis((data_r),dims,5);% k = 5
 
 %% more advanced image analyses & multi-modal integration
 

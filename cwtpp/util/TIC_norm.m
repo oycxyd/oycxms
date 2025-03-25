@@ -5,6 +5,7 @@ function [specs_norm] = TIC_norm(specs_input)
 % when the wait bar is turned off
 % tic;
 specs_norm = bsxfun(@rdivide,specs_input,sum(specs_input,2));
+specs_norm(isnan(specs_norm)|isinf(specs_norm))=0;
 % toc;
 
 % Benchmark cmparison below
