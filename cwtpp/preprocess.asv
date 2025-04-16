@@ -111,8 +111,7 @@ tic
 
 %% NEW peak matching scheme w/o interpolation
         if ischar(TQ_switch)
-            cmz = cell2mat(cellfun(@(x) x(1,:), cwtpeaks(1,1), 'UniformOutput', false));
-            aligned_peaks=interpSpec(cwtpeaks,cmz,length(cwtpeaks));
+            cmz = cwtpeaks{1};
         else
             [cmz,aligned_peaks] = matchSpec(cwtpeaks);
         end

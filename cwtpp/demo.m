@@ -19,7 +19,7 @@ preprocess();
 figure,stem(mz,mean(data),'Marker','None')
 
 % use a lock mass to recalibrate
-batch_recal(1800,[255.2324]);
+batch_recal(100,[255.2324]);
 
 % align the recalibrated data to each other
 dtwa(pwd,1,'recal');
@@ -39,7 +39,7 @@ KCAmask(data_norm,dims);
 
 % can also do this manually by KCA segmentation
 [kcadata,Imagekca,C] = cluster_analysis((data_norm),dims,3);
-mask = (kcadata==2|kcadata==3);% here cluster 2 & 3, check cluster images accordingly
+mask = (kcadata==1|kcadata==2);% here cluster 2 & 3, check cluster images accordingly
 mask = reshape(mask,dims);
 % mask = imfill(mask,'holes');
 figure,imagesc(mask);axis image
@@ -48,16 +48,16 @@ figure,imagesc(mask);axis image
 data_r = data;
 data_r(~mask,:) = 0;
 data_r =  log_trans(TIC_norm(data_r));
-output = component_analysis((data_r),3,dims);% here set to show first 3 components, can change accordingly
+output = component_analysis((data_r),4,dims);% here set to show first 3 components, can change accordingly
 
 % let's look a bit closer at the dimensionally-reduced data
 components = output{1};
 scores = output{2};
 
 % first plot all the components
-figure,plot(mz,components(:,1)./-max(components(:,1)),'r', ...
-    mz,components(:,2)./-max(components(:,2))*2,'g', ...
-    mz,components(:,3)./-max(components(:,3))*3,'b')
+figure,plot(mz,components(:,1)./max(components(:,1)),'r',...
+    mz,components(:,2)./max(components(:,2))+2,'g', ...
+    mz,components(:,3)./max(components(:,3))+4,'b')
 
 % now overlay the abundance images by first reshaping the scores and then
 % rgbimage
@@ -65,7 +65,7 @@ figure,plot(mz,components(:,1)./-max(components(:,1)),'r', ...
 % reshape & assign scores into a RGB (3-channels) image
 images = cat(3,(fliplr(rot90(reshape(scores(1,:),dims),-1))), ...
     (fliplr(rot90(reshape(scores(2,:),dims),-1))), ...
-    (fliplr(rot90(reshape(scores(3,:),dims),-1))));
+    (fliplr(rot90(reshape(scores(4,:),dims),-1))));
 RGBimage(images,dims);
 % choose the combination that matches components colours for
 % low-dimenstional visualisation
@@ -73,7 +73,7 @@ RGBimage(images,dims);
 % segmentation (you can choose the number of segements or let the algorithm
 % determine the optimal number by leaving it blank)
 [kcadata,Imagekca,C] = cluster_analysis((data_r),dims);% k=?
-[kcadata,Imagekca,C] = cluster_analysis((data_r),dims,5);% k = 5
+[kcadata,Imagekca,C] = cluster_analysis((data_r),dims,10);% k = 5
 
 %% more advanced image analyses & multi-modal integration
 
@@ -89,7 +89,7 @@ figure,imshow(BF)
 
 % define 'moving' & 'fixed' images and start co-reg routine
 moving = sum(BF,3).*BF_mask;
-fixed = TICimg(data,dims,0).*mask';
+fixed = TICimg(data,dims,0).*mask;
 [image_out, tforms] = coreg_routine(moving,fixed);
 
 % visualise results - here BF vs an ion image
