@@ -7,10 +7,10 @@ miscellaneous scripts/codes useful for MS analysis / ZTGROUP
 1. Install Matlab, recommended versions are anything >R2020a (preferably not the latest beta version)
 
 1.	Install Windows SDK7 for Matlab as per instructions here:
-https://uk.mathworks.com/matlabcentral/answers/101105-how-do-i-install-microsoft-windows-sdk-7-1
+https://uk.mathworks.com/matlabcentral/answers/101105-how-do-i-install-microsoft-windows-sdk-7-1 (**no longer available, please download from link below**)
 
 **files you need (apart from the SDK installer file) can be donwloaded here:**
-https://www.dropbox.com/scl/fo/p27kwayp9mrz3tvqvnh1i/AI3-P76BoJus89o8-6hPlMg?rlkey=0fxxkjjqwoa7uxufmzhn1bhrr&st=kx5rbzsc&dl=0
+[https://www.dropbox.com/scl/fo/p27kwayp9mrz3tvqvnh1i/AI3-P76BoJus89o8-6hPlMg?rlkey=0fxxkjjqwoa7uxufmzhn1bhrr&st=kx5rbzsc&dl=0](https://www.dropbox.com/scl/fo/p27kwayp9mrz3tvqvnh1i/AI3-P76BoJus89o8-6hPlMg?rlkey=0fxxkjjqwoa7uxufmzhn1bhrr&st=mxznmi56&dl=0)
 
 *Note that the second answer (not the ‘accepted’) by Andre Silva is the more useful in most cases, in summary:
 
