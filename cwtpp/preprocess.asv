@@ -25,7 +25,7 @@ tic
             if nargin > 1
                 TQ_switch = varargin{2};
             else
-                TQ_switch = 0;
+                TQ+
             end
         end
     end
