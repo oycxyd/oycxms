@@ -23,7 +23,7 @@ else
     
     % define ppm threshold as that at which max. of peaks is detected (by
     % cwtpp)
-    [thresh] = knee_pt(shifts,range);
+    [thresh] = knee_pt(shifts,50:50:800);
 end
 % [~,ind] = min(shifts - max(cellfun(@length, cwtpeaks)));[thresh] = 50*ind;
 disp(['matching peaks using an estimated ppm of ',num2str(thresh)])

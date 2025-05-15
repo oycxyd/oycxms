@@ -1,5 +1,14 @@
-function [mzs_output, ms_references] = msreffind(varargin)
-    if isempty(varargin)
+function [mzs_output, ms_references] = msreffind(mode, options)
+    arguments
+        mode (1,:) char
+        options.path (1,:) = pwd
+        options.threshold (1,:) {mustBeNumeric,mustBeReal} = 300
+        options.wsdatasets = []
+        options.wsmzs = []
+    end
+
+    datasets = {};mzs = {};
+    if isempty(nargin)
         dname = uigetdir();
         cd (dname);
         filenames=dir('*.raw');
@@ -10,35 +19,32 @@ function [mzs_output, ms_references] = msreffind(varargin)
 %             [~,dimes{i},mzs{i}]=h5toMat([filename,'\datacube.h5']);
 %             datasets = {};
         end
-        threshold = 300;
     else
-        mode = varargin{1};
+        if strcmp(mode,'raw')
+            cd (options.path);
+            filenames=dir('*.raw');
+            for i = 1:length(filenames)
+                filename = filenames(i).name;
+                [datasets{i},dimes{i},mzs{i}]=h5toMat([filename,'\datacube.h5']);
+    %             [~,dimes{i},mzs{i}]=h5toMat([filename,'\datacube.h5']);
+    %             datasets = {};
+            end
+        end
         if strcmp(mode,'recal')
             disp('finding reference with recalibrated data.')
             filenames=dir('*.raw');
-            datasets = {};mzs = {};
+            options.threshold = 30;
             for i = 1:length(filenames)
                 filename = filenames(i).name;
                 [datasets{i},dimes{i},mzs{i}]=h5toMat([filename,'\datacube_recal.h5']);
     %             [~,dimes{i},mzs{i}]=h5toMat([filename,'\datacube.h5']);
     %             datasets = {};
             end
-            if nargin > 1
-                threshold = varargin{2};
-            else
-                threshold = 300;
-            end
         end
         if strcmp(mode,'workspace')
-            datasets = varargin{2};
-            mzs = varargin{3};
-            if nargin > 3
-                threshold = varargin{4};
-            else
-                threshold = 300;
-            end
+            datasets = options.wsdatasets;
+            mzs = options.wsmzs;
         end
-
     end
   
     for i = 1:length(datasets)
@@ -59,19 +65,9 @@ function [mzs_output, ms_references] = msreffind(varargin)
         locs = 1:length(mz_recal);
     % end
     ms_references(:,1) = mz_recal(locs);
-    
-
-
-    % if nargin < 3
-    %     threshold = 1000;
-    %     disp('default ppm = 1000')
-    % else
-    %     threshold = varargin{2};
-    % end
 
 %     mzs_recal = {};
     for n = 2:length(mzs_recal)
-    % for n = 2:254
         % disp(n)
         mz_raw = mzs_recal{n};
 %         mz_raw = mzs{n};
@@ -82,16 +78,11 @@ function [mzs_output, ms_references] = msreffind(varargin)
             locs = 1:length(mz_raw);
         % end
         mz_raw_p = mz_raw(locs);
-    %     [mz_new_p] = MSrecal(mz_raw_p,references, 1000);
-
-    %     mz_raw(locs) = mz_new_p;
-    %     [mz_new] = MSrecal(mz_raw,references, 1000);
-    %     mzs_recal{n} = mz_new;
         for m = 1:size(ms_references,1)
                 % disp(m)
                 [diff, ind] = min( abs(mz_raw_p-ms_references(m,1)) );
                 ppm = diff/ms_references(m,1)*10^6;
-                if ppm <= threshold
+                if ppm <= options.threshold
                     [~, ind] = min( abs(mz_raw-mz_raw_p(ind)) );
                     ms_references(m,n) = ind;
                 else
@@ -100,6 +91,7 @@ function [mzs_output, ms_references] = msreffind(varargin)
         end     
     end
     ms_references(ms_references(:,1)==0,:)=[];
+    [~,ia] = unique(ms_references(:,2));ms_references = ms_references(ia,:);
 
     for i = 2:length(mzs_recal)
         % disp(i)
@@ -109,5 +101,5 @@ function [mzs_output, ms_references] = msreffind(varargin)
         clear dum
     end
     mzs_output(I) = mzs_recal;
-    ms_references = ms_references(:,1);
+    % ms_references = ms_references(:,1);
 end
