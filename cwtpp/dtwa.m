@@ -184,7 +184,6 @@ function [data_aligned, mz_recal, I] = dtwa(path,mode,options)
         if strcmp(method,'mz')
             [a,b] = maxent(mzs{1},data1);
             [data11] = a*randn(size(data1,1),length(mz_recal))+b;
-            data11 = data11-min(data11(:));
             [~,indd1,indd2] = intersect(mzs{1},mz_recal);
             data11(:,indd2) = data1(:,indd1);
             data1 = data11;
@@ -239,7 +238,6 @@ function [data_aligned, mz_recal, I] = dtwa(path,mode,options)
         if strcmp(method,'mz')
             [a,b] = maxent(mz2,data2);
             data_dtw = a*randn(size(data2,1),length(mz_recal))+b;
-            data_dtw = data_dtw-min(data_dtw(:));
             [~,indd1,indd2] = intersect(mz2,mz_recal);
             data_dtw(:,indd2) = data2(:,indd1);
         else
@@ -330,4 +328,4 @@ function [a,b,ent] = maxent(mz,data)
         ent(i) = entropy(data(:,i));
     end
     [~,ii] =  max(ent);
-    a = std(data(:,ii));b = mean(data(:,ii));
+    a = sqrt(std(data(:,ii)))/10;b = mean(data(:,ii))/10;
