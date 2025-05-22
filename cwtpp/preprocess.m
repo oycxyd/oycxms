@@ -116,7 +116,11 @@ tic
             cmz = cell2mat(cellfun(@(x) x(1,:), cwtpeaks(1,1), 'UniformOutput', false));
             aligned_peaks=interpSpec(cwtpeaks,cmz,length(cwtpeaks));
         else
-            [cmz,aligned_peaks] = matchSpec(cwtpeaks);
+            if use_metadata == 1
+                 [cmz,aligned_peaks] = matchSpec(cwtpeaks,freq=0.5);% ask for presence in >50% scans
+            else
+                [cmz,aligned_peaks] = matchSpec(cwtpeaks);
+            end
         end
         
         

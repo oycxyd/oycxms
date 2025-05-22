@@ -1,34 +1,35 @@
-function [cmz,aligned_peaks,multi] = matchSpec(varargin)
+function [cmz,aligned_peaks,multi] = matchSpec(cwtpeaks, thresh, options)
 % using cwt2cmz (James McKenzie) to find a common m/z axis 
 % and match intensities from all scans/pixels
-
+arguments
+    cwtpeaks cell
+    thresh (1,:) {mustBeNumeric,mustBeReal} = []
+    options.freq (1,:) {mustBeNumeric,mustBeReal} = 0.05
+end
 %% load in detected peaks & initialise parameters
 % mzs = cellfun(@(x) x(1,:), cwtpeaks, 'UniformOutput', false);
 % datasets = cellfun(@(x) x(2,:), cwtpeaks, 'UniformOutput', false);
 % tic
-cwtpeaks = varargin{1};
-if nargin > 1
-    thresh = varargin{2};
-else
-    shifts = [];
-    % quick look at number of common peaks that are found on >5% of data within
-    % various ppm windows (5-800)
-    range = [5 10 20 30 50 100 150 200 300 500 600 700 800];
-    for i = 1:length(range)
-        [pks] = cwt2cmz(cwtpeaks,'ppm',range(i),'mzRange',[50 1200], ...
-            'minFreq',round(length(cwtpeaks)*0.05));
-        shifts(i) = length(pks);
+    if isempty(thresh)
+        shifts = [];
+        % quick look at number of common peaks that are found on >5% of data within
+        % various ppm windows (5-800)
+        range = [5 10 20 30 50 100 150 200 300 500 600 700 800];
+        for i = 1:length(range)
+            [pks] = cwt2cmz(cwtpeaks,'ppm',range(i),'mzRange',[50 1200], ...
+                'minFreq',round(length(cwtpeaks)*0.05));
+            shifts(i) = length(pks);
+        end
+        % figure,plot(range,shifts)
+        
+        % define ppm threshold as that at which max. of peaks is detected (by
+        % cwtpp)
+        [thresh] = knee_pt(shifts,range);
     end
-    % figure,plot(range,shifts)
-    
-    % define ppm threshold as that at which max. of peaks is detected (by
-    % cwtpp)
-    [thresh] = knee_pt(shifts,range);
-end
 % [~,ind] = min(shifts - max(cellfun(@length, cwtpeaks)));[thresh] = 50*ind;
 disp(['matching peaks using an estimated ppm of ',num2str(thresh)])
 [cmz] = cwt2cmz(cwtpeaks,'ppm',thresh,'mzRange',[50 1200], ...
-    'minFreq',round(length(cwtpeaks)*0.05));
+    'minFreq',round(length(cwtpeaks)*options.freq));
 
 %% match peaks from all pixels
 aligned_peaks = [];
