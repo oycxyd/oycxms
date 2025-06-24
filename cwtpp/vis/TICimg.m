@@ -1,5 +1,5 @@
 function [TIC_image] = TICimg(input,dims,plot_on_off,mask,filter)
-    TIC_image = TIC(input);
+    TIC_image = sum(input,2);
     TIC_image = reshape(TIC_image,[dims(1) dims(2)]);
     if nargin < 4
         mask = ones(dims(1),dims(2));
