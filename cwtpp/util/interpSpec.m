@@ -8,7 +8,7 @@ function [new_spectra]=interpSpec(varargin)
 %     counter1 = waitbar(0,'Interpolating...');
     if nargin <4
         counter1 = parfor_wait(num_spec, 'Waitbar', true);
-        parfor i=1:num_spec
+        for i=1:num_spec
 %             disp(i)
     %         waitbar(i/size, counter1);
             counter1.Send; 

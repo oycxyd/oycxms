@@ -1,4 +1,4 @@
-function [cmz,aligned_peaks,multi] = matchSpec(cwtpeaks, thresh, options)
+function [cmz,aligned_peaks, range, shifts] = matchSpec(cwtpeaks, thresh, options)
 % using cwt2cmz (James McKenzie) to find a common m/z axis 
 % and match intensities from all scans/pixels
 arguments
@@ -18,6 +18,9 @@ end
         for i = 1:length(range)
             [pks] = cwt2cmz(cwtpeaks,'ppm',range(i),'mzRange',[50 1200], ...
                 'minFreq',round(length(cwtpeaks)*0.05));
+            if isempty(pks)
+                pks = 0;
+            end
             shifts(i) = length(pks);
         end
         % figure,plot(range,shifts)
@@ -30,7 +33,7 @@ end
 disp(['matching peaks using an estimated ppm of ',num2str(thresh)])
 [cmz] = cwt2cmz(cwtpeaks,'ppm',thresh,'mzRange',[50 1200], ...
     'minFreq',round(length(cwtpeaks)*options.freq));
-
+if isempty(cmz) cmz = 0; end
 %% match peaks from all pixels
 aligned_peaks = [];
 M = length(cwtpeaks);N = length(cmz);
@@ -55,7 +58,3 @@ parfor m = 1:M
         multi{m} = multi_check;
     end
 end
-% if ~isempty(multi)
-%     disp(['warning! multi-hits found in ',num2str(length(unique(cell2mat(multi)))-1),' peaks.'])
-% end
-% toc

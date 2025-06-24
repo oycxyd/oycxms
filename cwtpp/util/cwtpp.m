@@ -1,56 +1,44 @@
-function [list_of_peaks,dims, mode] =  cwtpp(varargin)
-tic
+function [list_of_peaks,dims, mode] =  cwtpp(filename,options)
 
-if isempty(varargin)
+arguments
+    filename = 'default'
+    options.Imin = 100
+    options.use_metadata = 0
+    options.dir = ''
+end
+
+% tic
+if strcmp(filename,'default')
     [path] = uigetdir();
     cd (path);
-    files=[dir('*.raw');dir('*.imzml')];
+    files=[dir('*.raw');dir('*.imzml');dir('*.mz5')];
     filename=files(1).name;
-    [~,~,ext] = fileparts(filename);
+end
+try
+    [~,file,ext] = fileparts(filename);
     if strcmp(ext, '.raw')
         mode = '.raw';
-    else
+    elseif strcmp(ext, '.imzML')
         mode = '.imzml';
-    end
-elseif ischar(varargin{1})
-    filename = varargin{1};
-    [~,~,ext] = fileparts(filename);
-    if strcmp(ext, '.raw')
-        mode = '.raw';
     else
-        mode = '.imzml';
+        mode = '.mz5';
     end
-else
-    filename = varargin{1};
+catch
     mode = 'workspace';
 end
 
-if nargin > 1
-    Imin = varargin{2};
-else
-    Imin = 100;
-end
-
-if nargin > 2
-    use_metadata = varargin{3};
-    dir = varargin{4};
-else
-    use_metadata = 0;
-end
-    
-[list_of_peaks,dims] = pp_mode(filename,mode,Imin);
-if use_metadata == 1
+[list_of_peaks,dims] = pp_mode(filename,mode=mode,Imin=options.Imin);
+if options.use_metadata == 1
     mode = '.raw';
-    save([dir,'\cwtpeaks'],'list_of_peaks','dims')
+    save([options.dir,'\cwtpeaks'],'list_of_peaks','dims')
 else
     if strcmp(mode,'workspace') == 0
         if strcmp(mode,'.raw')
             save([filename,'\cwtpeaks'],'list_of_peaks','dims')
         else
-            save(['cwtpeaks'],'list_of_peaks','dims')
+
+            save([file,'_cwtpeaks'],'list_of_peaks','dims')
         end
     end
 end
-
-
-toc
+% toc

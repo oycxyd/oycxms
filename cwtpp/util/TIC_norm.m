@@ -4,7 +4,7 @@ function [specs_norm] = TIC_norm(specs_input)
 % This is quicker by typically >1000 fold (typically ~ 3 seconds), less
 % when the wait bar is turned off
 % tic;
-specs_norm = bsxfun(@rdivide,specs_input,sum(specs_input,2));
+specs_norm = bsxfun(@rdivide,specs_input,sum(specs_input,1));
 specs_norm(isnan(specs_norm)|isinf(specs_norm))=0;
 % toc;
 

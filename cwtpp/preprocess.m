@@ -1,32 +1,26 @@
 %% new preprocessing workflow
 %% MAIN FUNCTION
-function [aligned_peaks, cmz, cwtpeaks] = preprocess(varargin)
+function [aligned_peaks, cmz, cwtpeaks] = preprocess(filenames,options)
 
-tic
+arguments
+    filenames string = 'default'
+    options.TQswitch = 0
+    options.mode string = '.raw'
+end
+% tic
 %% load in raw data
-    if isempty(varargin)
+    if strcmp(filenames,'default')
         dname = uigetdir();
         %my dir, it will just go to root if this folder doesn't exist
         cd (dname);
-        filenames=[dir('*.raw');dir('*.imzml')];
-        % TQ_switch = 'TQ';
-        TQ_switch = 0;
+        filenames=[dir('*.raw');dir('*.imzml');dir('*.mz5')];
     else
-        if strcmp(varargin{1},'TQ')
-            TQ_switch = varargin{1};
+        if strcmp(options.TQswitch,'TQ')
             dname = uigetdir();
             cd (dname);
-            filenames=[dir('*.raw');dir('*.imzml')];
+            filenames=[dir('*.raw');dir('*.imzml');dir('*.mz5')];
         else
-            filenames = varargin{1};
-            if ischar(filenames)
-                filenames = cellstr(filenames);
-            end
-            if nargin > 1
-                TQ_switch = varargin{2};
-            else
-                TQ_switch = 0;
-            end
+            filenames = cellstr(filenames);
         end
     end
 %% load in metadata if available
@@ -81,30 +75,32 @@ tic
         filename = filenames;
     end
     try
-        if ischar(TQ_switch)
+        if strcmp(options.TQswitch,'TQ')
             disp('TQ data!')
             if contains(filename,'.raw')
                 [cwtpeaks,dims] = raw2mat(filename);
                 dims = [dims(1)+1,dims(2)-1];
                 cwtpeaks = cwtpeaks(1:dims(1)*dims(2));
-            else
+            end
+            if contains(filename,'.imzML')
                 disp('imzml')
                 [cwtpeaks,dims] = load_imzml(filename);
             end
-            mode = '.raw';
+            if contains(filename,'.mz5')
+                [cwtpeaks,dims] = mz5toMat(filename);
+            end
+            options.mode = '.raw';
         else
             if use_metadata == 1
-                [cwtpeaks,dims,mode] = cwtpp(data_select,100,use_metadata,filename);
+                [cwtpeaks,dims,options.mode] = cwtpp(data_select,Imin = 1000,use_metadata=1,dir=filename);
             else
-                [cwtpeaks,dims,mode] = cwtpp(filename);
+                [cwtpeaks,dims,options.mode] = cwtpp(filename,Imin = 1000);
             end
         end
 %% define a global axis (vector in HS data thats ~ mean/median)
         % specs = cwtpeaks;
         % [~,ind1] = max(cellfun(@length, specs));
-        % dum=(cell2mat(specs(ind1)));
-        % global_mz=dum(1,:);
-        % clear dum
+        % global_mz=specs{ind1}(1,:);
 
 %% Interpolate all spectra to global axis
         % specs_interp=interpSpec(specs,global_mz,length(specs) );
@@ -112,12 +108,12 @@ tic
         % parallelised
 
 %% NEW peak matching scheme w/o interpolation
-        if ischar(TQ_switch)
+        if strcmp(options.TQswitch,'TQ')
             cmz = cell2mat(cellfun(@(x) x(1,:), cwtpeaks(1,1), 'UniformOutput', false));
             aligned_peaks=interpSpec(cwtpeaks,cmz,length(cwtpeaks));
         else
             if use_metadata == 1
-                 [cmz,aligned_peaks] = matchSpec(cwtpeaks,freq=0.5);% ask for presence in >50% scans
+                [cmz,aligned_peaks] = matchSpec(cwtpeaks,freq=0.5);% ask for presence in >50% scans
             else
                 [cmz,aligned_peaks] = matchSpec(cwtpeaks);
             end
@@ -141,7 +137,7 @@ tic
         end
     
 %% save datacube to h5
-        if strcmp(mode,'.raw')
+        if strcmp(options.mode,'.raw')
             if contains(filename,'.raw')
                 if isfile([filename,'/datacube.h5']) == 0
                     h5create([filename,'/datacube.h5'],'/datacube',size(aligned_peaks))
@@ -160,40 +156,41 @@ tic
                     h5write([filename,'/datacube.h5'],'/dims',dims)
                 end
             else
-                disp('check')
-                if isfile(['datacube.h5']) == 0
-                    h5create(['datacube.h5'],'/datacube',size(aligned_peaks))
-                    h5create(['datacube.h5'],'/mz',size(cmz));
-                    h5create(['datacube.h5'],'/dims',size(dims));
-                    h5write(['datacube.h5'],'/datacube',aligned_peaks)
-                    h5write(['datacube.h5'],'/mz',cmz)
-                    h5write(['datacube.h5'],'/dims',dims)
+                [~,file] = fileparts(filename);
+                if isfile([file,'.h5']) == 0
+                    h5create([file,'.h5'],'/datacube',size(aligned_peaks))
+                    h5create([file,'.h5'],'/mz',size(cmz));
+                    h5create([file,'.h5'],'/dims',size(dims));
+                    h5write([file,'.h5'],'/datacube',aligned_peaks)
+                    h5write([file,'.h5'],'/mz',cmz)
+                    h5write([file,'.h5'],'/dims',dims)
                 else
-                    delete(['datacube.h5'])
-                    h5create(['datacube.h5'],'/datacube',size(aligned_peaks))
-                    h5create(['datacube.h5'],'/mz',size(cmz));
-                    h5create(['datacube.h5'],'/dims',size(dims));
-                    h5write(['datacube.h5'],'/datacube',aligned_peaks)
-                    h5write(['datacube.h5'],'/mz',cmz)
-                    h5write(['datacube.h5'],'/dims',dims)
+                    delete([file,'.h5'])
+                    h5create([file,'.h5'],'/datacube',size(aligned_peaks))
+                    h5create([file,'.h5'],'/mz',size(cmz));
+                    h5create([file,'.h5'],'/dims',size(dims));
+                    h5write([file,'.h5'],'/datacube',aligned_peaks)
+                    h5write([file,'.h5'],'/mz',cmz)
+                    h5write([file,'.h5'],'/dims',dims)
                 end
             end
         else
-            if isfile(['datacube.h5']) == 0
-                h5create(['datacube.h5'],'/datacube',size(aligned_peaks))
-                h5create(['datacube.h5'],'/mz',size(cmz));
-                h5create(['datacube.h5'],'/dims',size(dims));
-                h5write(['datacube.h5'],'/datacube',aligned_peaks)
-                h5write(['datacube.h5'],'/mz',cmz)
-                h5write(['datacube.h5'],'/dims',dims)
+            [~,file] = fileparts(filename);
+            if isfile([file,'.h5']) == 0
+                h5create([file,'.h5'],'/datacube',size(aligned_peaks))
+                h5create([file,'.h5'],'/mz',size(cmz));
+                h5create([file,'.h5'],'/dims',size(dims));
+                h5write([file,'.h5'],'/datacube',aligned_peaks)
+                h5write([file,'.h5'],'/mz',cmz)
+                h5write([file,'.h5'],'/dims',dims)
             else
-                delete(['datacube.h5'])
-                h5create(['datacube.h5'],'/datacube',size(aligned_peaks))
-                h5create(['datacube.h5'],'/mz',size(cmz));
-                h5create(['datacube.h5'],'/dims',size(dims));
-                h5write(['datacube.h5'],'/datacube',aligned_peaks)
-                h5write(['datacube.h5'],'/mz',cmz)
-                h5write(['datacube.h5'],'/dims',dims)
+                delete([file,'.h5'])
+                h5create([file,'.h5'],'/datacube',size(aligned_peaks))
+                h5create([file,'.h5'],'/mz',size(cmz));
+                h5create([file,'.h5'],'/dims',size(dims));
+                h5write([file,'.h5'],'/datacube',aligned_peaks)
+                h5write([file,'.h5'],'/mz',cmz)
+                h5write([file,'.h5'],'/dims',dims)
             end
         end
     catch e
@@ -207,7 +204,7 @@ tic
     end
     disp('All Done!')
     
-    if length(filenames) > 1
+    if n > 1
         answer = questdlg('Align all datasets to common m/z axis?', ...
     'Question');
         switch answer
@@ -220,5 +217,5 @@ tic
                 disp([answer ' Aborted.'])  
         end
     end
-toc
+% toc
 end

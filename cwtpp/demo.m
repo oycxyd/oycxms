@@ -5,7 +5,7 @@ preprocess();
 
 % use TQ handle to indicate TQ data (no peak detection), can also use for
 % high-res, high SNR data e.g., from Orbitrap
-preprocess('TQ');
+preprocess(TQswitch='TQ');
 
 % to preprocess (multi) 1D files, first auto-generate the metadata file (or
 % manually if you wish), then preprocess() using the metadata. You can
