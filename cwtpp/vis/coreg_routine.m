@@ -9,6 +9,9 @@ else
     param2 = 500; %# iterations
 end
 
+if size(image_in)~=size(gt)
+    image_in = imresize(image_in,size(gt));
+end
 % normalise first
 image_in = (image_in-min(image_in(:)))/max(image_in(:));
 gt = (gt-min(gt(:)))/max(gt(:));
@@ -45,6 +48,7 @@ while opti_switch == 1
     switch answer
         case 'Yes'
             opti_switch = 0;
+            close all
             break
         case 'No'
             image_in = image_out;
