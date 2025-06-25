@@ -92,9 +92,9 @@ end
             options.mode = '.raw';
         else
             if use_metadata == 1
-                [cwtpeaks,dims,options.mode] = cwtpp(data_select,Imin = 1000,use_metadata=1,dir=filename);
+                [cwtpeaks,dims,options.mode] = cwtpp(data_select,Imin = 100,use_metadata=1,dir=filename);
             else
-                [cwtpeaks,dims,options.mode] = cwtpp(filename,Imin = 1000);
+                [cwtpeaks,dims,options.mode] = cwtpp(filename,Imin = 100);
             end
         end
 %% define a global axis (vector in HS data thats ~ mean/median)
