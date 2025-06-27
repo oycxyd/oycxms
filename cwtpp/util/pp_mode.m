@@ -5,7 +5,9 @@ function [list_of_peaks,dims] = pp_mode(filename, options)
     arguments
         filename
         options.mode string = '.raw';
-        options.Imin {mustBeNumeric} = 100;
+        options.T0 {mustBeNumeric} = 500;
+        options.ite {mustBeNumeric} = 100;
+        options.Imin {mustBeNumeric} = 1000;
     end
     
     list_of_peaks = {};
@@ -81,28 +83,29 @@ function [list_of_peaks,dims] = pp_mode(filename, options)
         wcoefs = cwttest.cfs;
 
     %% crazy-climber/other max. finding
-        % [rows,cols] = size(wcoefs);
-        % Nparticles = floor(cols * rows/2); % number recommended by Zheng et al.
-        % % its_per_stage = rows*4;
+        [rows,cols] = size(wcoefs);
+        Nparticles = floor(cols * rows/2); % number recommended by Zheng et al.
+        % its_per_stage = rows*4;
         % T0 = 500;
-        % Tf = 0;
         % ite = 100;
-        % T = [T0:(Tf-T0)/(ite-1):Tf];
-        % % T = 500*[ones(1, its_per_stage)*1 ones(1, its_per_stage)*.1 ones(1, its_per_stage)*.01 ones(1, its_per_stage)*.001]; 
-        % % not sure what this does, need to read about simulated annealing
-        % % T = [500 400 300 200 100];
-        % % T = [1000 800 600 400 200];
-        % ridgetable = CrazyClimber((wcoefs), T, Nparticles);
-        % % figure,imagesc(ridgetable);colorMap = jet(256);colormap(colorMap); colorbar;
-        % ridgetable = flipud(-ridgetable);
-        % try
-        %     ridgetable = round(spectrum.*(ridgetable))-round(Nparticles/10);
-        % catch
-        %     ridgetable = round(spectrum'.*(ridgetable))-round(Nparticles/10);
-        % end
-    %% crazy_climber %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+        Tf = 0;
+        T = [options.T0:(Tf-options.T0)/(options.ite-1):Tf];
+        % T = 500*[ones(1, its_per_stage)*1 ones(1, its_per_stage)*.1 ones(1, its_per_stage)*.01 ones(1, its_per_stage)*.001]; 
+        % not sure what this does, need to read about simulated annealing
+        % T = [500 400 300 200 100];
+        % T = [1000 800 600 400 200];
+        if options.ite > 0
+            ridgetable = CrazyClimber((wcoefs), T, Nparticles);
+            % figure,imagesc(ridgetable);colorMap = jet(256);colormap(colorMap); colorbar;
+            ridgetable = flipud(-ridgetable);
+            try
+                ridgetable = round(spectrum.*(ridgetable))-round(Nparticles/10);
+            catch
+                ridgetable = round(spectrum'.*(ridgetable))-round(Nparticles/10);
+            end
+        else
             ridgetable = flipud(wcoefs);
+        end
 
     % find local maxima for all levels
             maxima = {};

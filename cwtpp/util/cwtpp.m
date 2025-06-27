@@ -2,7 +2,9 @@ function [list_of_peaks,dims, mode] =  cwtpp(filename,options)
 
 arguments
     filename = 'default'
-    options.Imin = 100
+    options.T0 {mustBeNumeric} = 500;
+    options.ite {mustBeNumeric} = 100;
+    options.Imin {mustBeNumeric} = 1000;
     options.use_metadata = 0
     options.dir = ''
 end
@@ -27,7 +29,7 @@ catch
     mode = 'workspace';
 end
 
-[list_of_peaks,dims] = pp_mode(filename,mode=mode,Imin=options.Imin);
+[list_of_peaks,dims] = pp_mode(filename,mode=mode,T0 = options.T0, ite = options.ite,Imin=options.Imin);
 if options.use_metadata == 1
     mode = '.raw';
     save([options.dir,'\cwtpeaks'],'list_of_peaks','dims')

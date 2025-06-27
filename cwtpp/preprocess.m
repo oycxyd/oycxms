@@ -6,6 +6,9 @@ arguments
     filenames string = 'default'
     options.TQswitch = 0
     options.mode string = '.raw'
+    options.T0 {mustBeNumeric} = 500;% default parameters for simulated annealing, can be optimised
+    options.ite {mustBeNumeric} = 100;
+    options.Imin {mustBeNumeric} = 1000;
 end
 % tic
 %% load in raw data
@@ -92,9 +95,11 @@ end
             options.mode = '.raw';
         else
             if use_metadata == 1
-                [cwtpeaks,dims,options.mode] = cwtpp(data_select,Imin = 100,use_metadata=1,dir=filename);
+                [cwtpeaks,dims,options.mode] = cwtpp(data_select, T0 = options.T0, ite = options.ite, ...
+                    Imin = options.Imin,use_metadata=1,dir=filename);
             else
-                [cwtpeaks,dims,options.mode] = cwtpp(filename,Imin = 100);
+                [cwtpeaks,dims,options.mode] = cwtpp(filename,T0 = options.T0, ite = options.ite, ...
+                    Imin = options.Imin);
             end
         end
 %% define a global axis (vector in HS data thats ~ mean/median)
