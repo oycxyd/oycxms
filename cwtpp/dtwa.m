@@ -1,5 +1,6 @@
 %% using dtw to align (input is a cell of datasets to be aligned with their corresponding m/z vectors)
-
+% matlab dtw function distance metric has a bug, not using atm while
+% investigation ongoing
 function [data_aligned, mz_recal, I] = dtwa(path,mode,options)
     arguments
         path (1,:) = pwd
