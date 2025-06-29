@@ -29,8 +29,7 @@ function [mzs_output, ms_references] = msreffind(mode, options)
     %             [~,dimes{i},mzs{i}]=h5toMat([filename,'\datacube.h5']);
     %             datasets = {};
             end
-        end
-        if strcmp(mode,'recal')
+        elseif strcmp(mode,'recal')
             disp('finding reference with recalibrated data.')
             filenames=dir('*.raw');
             options.threshold = 30;
@@ -40,10 +39,16 @@ function [mzs_output, ms_references] = msreffind(mode, options)
     %             [~,dimes{i},mzs{i}]=h5toMat([filename,'\datacube.h5']);
     %             datasets = {};
             end
-        end
-        if strcmp(mode,'workspace')
+        elseif strcmp(mode,'workspace')
             datasets = options.wsdatasets;
             mzs = options.wsmzs;
+        else
+            filenames=dir('*.mz5');
+            for i = 1:length(filenames)
+                filename = filenames(i).name;filename = filename(1:end-4);
+                % [datasets{i},dimes{i},mzs{i}]=h5toMat([filename,'\datacube.h5']);
+                [datasets{i},dimes{i},mzs{i}]=h5toMat([filename,'.h5']);
+            end
         end
     end
   

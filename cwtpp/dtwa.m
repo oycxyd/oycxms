@@ -11,13 +11,23 @@ function [data_aligned, mz_recal, I] = dtwa(path,mode,options)
     if isempty(path)
         dname = uigetdir();
         cd (dname);
-        filenames=dir('*.raw');
+        filenames=[dir('*.raw')];
         datasets = {};mzs = {};
-        for i = 1:length(filenames)
-            filename = filenames(i).name;
-            % [datasets{i},dimes{i},mzs{i}]=h5toMat([filename,'\datacube.h5']);
-            [~,dimes{i},mzs{i}]=h5toMat([filename,'\datacube.h5']);
-%             datasets = {};
+        if isempty(filenames)
+            filenames=[dir('*.mz5')];
+            for i = 1:length(filenames)
+                filename = filenames(i).name;filename = filename(1:end-4);
+                % [datasets{i},dimes{i},mzs{i}]=h5toMat([filename,'\datacube.h5']);
+                [~,dimes{i},mzs{i}]=h5toMat([filename,'.h5']);
+    %             datasets = {};
+            end
+        else
+            for i = 1:length(filenames)
+                filename = filenames(i).name;
+                % [datasets{i},dimes{i},mzs{i}]=h5toMat([filename,'\datacube.h5']);
+                [~,dimes{i},mzs{i}]=h5toMat([filename,'\datacube.h5']);
+    %             datasets = {};
+            end
         end
     else
         dname = path;
@@ -52,12 +62,20 @@ function [data_aligned, mz_recal, I] = dtwa(path,mode,options)
             datasets = varargin{1};
             mzs = varargin{2};
             options.save = 0;
-        end
-        if strcmp(mode, 'raw')
+        elseif strcmp(mode, 'raw')
             for i = 1:length(filenames)
             filename = filenames(i).name;
             [~,dimes{i},mzs{i}]=h5toMat([filename,'\datacube.h5']);
 %             datasets = {};
+            end
+        else
+            disp('detected mz5 files.')
+            filenames=[dir('*.mz5')];
+            for i = 1:length(filenames)
+                filename = filenames(i).name;filename = filename(1:end-4);
+                % [datasets{i},dimes{i},mzs{i}]=h5toMat([filename,'\datacube.h5']);
+                [~,dimes{i},mzs{i}]=h5toMat([filename,'.h5']);
+    %             datasets = {};
             end
         end
     end
@@ -97,8 +115,11 @@ function [data_aligned, mz_recal, I] = dtwa(path,mode,options)
             if strcmp(mode, 'workspace')
                 [mzs_recal, ms_references] = msreffind('workspace', ...
                     wsdatasets = datasets,wsmzs=mzs);
-            else
+            elseif strcmp(mode, 'raw')
                 [mzs_recal, ms_references] = msreffind('raw', ...
+                    threshold = options.matchppm);
+            else
+                [mzs_recal, ms_references] = msreffind('mz5', ...
                     threshold = options.matchppm);
             end
         end
@@ -179,9 +200,15 @@ function [data_aligned, mz_recal, I] = dtwa(path,mode,options)
             dum = datasets{1};data1(:,indd2) = dum(:,indd1);
         end
         data_aligned{1} = data1;
-    else
-        [data1]=h5toMat([filenames(I(1)).name,'\datacube.h5']);
-        filename = filenames(I(1)).name;
+    else 
+        if strcmp(mode,'mz5')
+            filename = filenames(I(1)).name(1:end-4);
+            [data1]=h5toMat([filename,'.h5']);
+            out_dir = pwd;
+        else
+            [data1]=h5toMat([filenames(I(1)).name,'\datacube.h5']);
+            out_dir = filenames(I(1)).name;
+        end
         if strcmp(method,'mz')
             [a,b] = maxent(mzs{1},data1);
             [data11] = a*randn(size(data1,1),length(mz_recal))+b;
@@ -191,21 +218,26 @@ function [data_aligned, mz_recal, I] = dtwa(path,mode,options)
         end
     end
     if options.save == 1
-        if isfile([filename,'/datacube_aligned.h5']) == 0
-            h5create([filename,'/datacube_aligned.h5'],'/datacube',size(data1))
-            h5create([filename,'/datacube_aligned.h5'],'/mz',size(mz_recal));
-            h5create([filename,'/datacube_aligned.h5'],'/dims',size(dimes{I(1)}));
-            h5write([filename,'/datacube_aligned.h5'],'/datacube',data1)
-            h5write([filename,'/datacube_aligned.h5'],'/mz',mz_recal)
-            h5write([filename,'/datacube_aligned.h5'],'/dims',dimes{I(1)})
+        if strcmp(mode,'mz5')
+            if isfile([filename,'_aligned.h5']) > 0
+                delete([filename,'_aligned.h5'])
+            end
+            h5create([filename,'_aligned.h5'],'/datacube',size(data1))
+            h5create([filename,'_aligned.h5'],'/mz',size(mz_recal));
+            h5create([filename,'_aligned.h5'],'/dims',size(dimes{I(1)}));
+            h5write([filename,'_aligned.h5'],'/datacube',data1)
+            h5write([filename,'_aligned.h5'],'/mz',mz_recal)
+            h5write([filename,'_aligned.h5'],'/dims',dimes{I(1)})
         else
-            delete([filename,'/datacube_aligned.h5'])
-            h5create([filename,'/datacube_aligned.h5'],'/datacube',size(data1))
-            h5create([filename,'/datacube_aligned.h5'],'/mz',size(mz_recal));
-            h5create([filename,'/datacube_aligned.h5'],'/dims',size(dimes{I(1)}));
-            h5write([filename,'/datacube_aligned.h5'],'/datacube',data1)
-            h5write([filename,'/datacube_aligned.h5'],'/mz',mz_recal)
-            h5write([filename,'/datacube_aligned.h5'],'/dims',dimes{I(1)})
+            if isfile([out_dir,'/datacube_aligned.h5']) > 0
+                delete([out_dir,'/datacube_aligned.h5'])
+            end
+            h5create([out_dir,'/datacube_aligned.h5'],'/datacube',size(data1))
+            h5create([out_dir,'/datacube_aligned.h5'],'/mz',size(mz_recal));
+            h5create([out_dir,'/datacube_aligned.h5'],'/dims',size(dimes{I(1)}));
+            h5write([out_dir,'/datacube_aligned.h5'],'/datacube',data1)
+            h5write([out_dir,'/datacube_aligned.h5'],'/mz',mz_recal)
+            h5write([out_dir,'/datacube_aligned.h5'],'/dims',dimes{I(1)})
         end
     end
     
@@ -218,8 +250,13 @@ function [data_aligned, mz_recal, I] = dtwa(path,mode,options)
         if strcmp(mode,'workspace')
             data2 = datasets{n+1};
         else
-            filename = filenames(I(n+1)).name;
-            data2 = h5toMat([filename,'\datacube.h5']);
+            if strcmp(mode,'mz5')
+                filename = filenames(I(n+1)).name;filename = filename(1:end-4);
+                data2 = h5toMat([filename,'.h5']);
+            else
+                filename = filenames(I(n+1)).name;
+                data2 = h5toMat([filename,'\datacube.h5']);
+            end
         end
         % data_length(n) = size(data2,2);
         mz2 = mzs{n+1};
@@ -233,7 +270,7 @@ function [data_aligned, mz_recal, I] = dtwa(path,mode,options)
             end
         else
             disp('aligning using mz')
-            [~,i1,i2] = dtw(mz_recal, mz2,'symmkl');
+            % [~,i1,i2] = dtw(mz_recal, mz2,'symmkl');
         end
         data_dtw = [];
         if strcmp(method,'mz')
@@ -254,21 +291,26 @@ function [data_aligned, mz_recal, I] = dtwa(path,mode,options)
         if options.save == 1        
 %                 disp(n)
             disp('saving...');
-            if isfile([filename,'/datacube_aligned.h5']) == 0
-                h5create([filename,'/datacube_aligned.h5'],'/datacube',size(data_dtw))
-                h5create([filename,'/datacube_aligned.h5'],'/mz',size(mz_recal));
-                h5create([filename,'/datacube_aligned.h5'],'/dims',size(dimes{I(n+1)}));
-                h5write([filename,'/datacube_aligned.h5'],'/datacube',data_dtw)
-                h5write([filename,'/datacube_aligned.h5'],'/mz',mz_recal)
-                h5write([filename,'/datacube_aligned.h5'],'/dims',dimes{I(n+1)})
+            if strcmp(mode,'mz5')
+                if isfile([filename,'_aligned.h5']) > 0
+                    delete([filename,'_aligned.h5'])
+                end
+                h5create([filename,'_aligned.h5'],'/datacube',size(data_dtw))
+                h5create([filename,'_aligned.h5'],'/mz',size(mz_recal));
+                h5create([filename,'_aligned.h5'],'/dims',size(dimes{I(n+1)}));
+                h5write([filename,'_aligned.h5'],'/datacube',data_dtw)
+                h5write([filename,'_aligned.h5'],'/mz',mz_recal)
+                h5write([filename,'_aligned.h5'],'/dims',dimes{I(n+1)})
             else
-                delete([filename,'/datacube_aligned.h5'])
-                h5create([filename,'/datacube_aligned.h5'],'/datacube',size(data_dtw))
-                h5create([filename,'/datacube_aligned.h5'],'/mz',size(mz_recal));
-                h5create([filename,'/datacube_aligned.h5'],'/dims',size(dimes{I(n+1)}));
-                h5write([filename,'/datacube_aligned.h5'],'/datacube',data_dtw)
-                h5write([filename,'/datacube_aligned.h5'],'/mz',mz_recal)
-                h5write([filename,'/datacube_aligned.h5'],'/dims',dimes{I(n+1)})
+                if isfile([out_dir,'/datacube_aligned.h5']) > 0
+                    delete([out_dir,'/datacube_aligned.h5'])
+                end
+                h5create([out_dir,'/datacube_aligned.h5'],'/datacube',size(data_dtw))
+                h5create([out_dir,'/datacube_aligned.h5'],'/mz',size(mz_recal));
+                h5create([out_dir,'/datacube_aligned.h5'],'/dims',size(dimes{I(n+1)}));
+                h5write([out_dir,'/datacube_aligned.h5'],'/datacube',data_dtw)
+                h5write([out_dir,'/datacube_aligned.h5'],'/mz',mz_recal)
+                h5write([out_dir,'/datacube_aligned.h5'],'/dims',dimes{I(n+1)})
             end
         else
             data_aligned{n+1} = data_dtw;
