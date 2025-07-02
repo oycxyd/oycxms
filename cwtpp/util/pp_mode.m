@@ -112,7 +112,7 @@ function [list_of_peaks,dims] = pp_mode(filename, options)
             for i = 1:length(scales)
                 try
             %     [pks,locs] = findpeaks(ridgetable(i,:),'MinPeakHeight',Imin,'MinPeakDistance',3);
-                    [pks,locs] = findpeaks(ridgetable(i,:),'MinPeakProminence',options.Imin,'MinPeakDistance',3);
+                    [pks,locs] = findpeaks(ridgetable(i,:),'MinPeakProminence',options.Imin,'MinPeakDistance',2);
                     maxima{i} = cat(1,pks,locs);
                 catch
                     pks = 0; locs = 0;
