@@ -6,9 +6,10 @@ arguments
     filenames string = 'default'
     options.TQswitch = 0
     options.mode string = '.raw'
-    options.T0 {mustBeNumeric} = 500;% default parameters for simulated annealing, can be optimised
+    options.T0 {mustBeNumeric} = 1000;% default parameters for simulated annealing, can be optimised
     options.ite {mustBeNumeric} = 100;
     options.Imin {mustBeNumeric} = 1000;
+    options.pmthresh = [];
 end
 % tic
 %% load in raw data
@@ -118,9 +119,9 @@ end
             aligned_peaks=interpSpec(cwtpeaks,cmz,length(cwtpeaks));
         else
             if use_metadata == 1
-                [cmz,aligned_peaks] = matchSpec(cwtpeaks,freq=0.5);% ask for presence in >50% scans
+                [cmz,aligned_peaks] = matchSpec(cwtpeaks,options.pmthresh,freq=0.5);% ask for presence in >50% scans
             else
-                [cmz,aligned_peaks] = matchSpec(cwtpeaks);
+                [cmz,aligned_peaks] = matchSpec(cwtpeaks,options.pmthresh);
             end
         end
         
@@ -131,6 +132,7 @@ end
                 TIC_image = TICimg(aligned_peaks,dims,0);
                 figure      
                 subplot(1,2,1);
+                
                 imagesc(TIC_image);axis image;colormap('magma');
                 title('TIC image', 'Interpreter', 'none')
                 subplot(1,2,2);
@@ -215,7 +217,11 @@ end
         switch answer
             case 'Yes'
                 disp([answer ' OK.'])
-                dtwa(dname);
+                if strcmp(options.mode,'.mz5')
+                    dtwa(dname,'mz5');
+                else
+                    dtwa(dname);
+                end
             case 'No'
                 disp([answer ' OK.'])
             case 'Cancel'

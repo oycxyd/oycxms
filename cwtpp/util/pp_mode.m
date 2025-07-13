@@ -126,7 +126,11 @@ function [list_of_peaks,dims] = pp_mode(filename, options)
             ridges = {};
             ridges_ini = maxima{1};
             if isempty(ridges_ini)
-                list_of_peaks{n} = [mz; zeros(1,length(spectrum))];
+                try
+                    list_of_peaks{n} = [mz; zeros(1,length(spectrum))];
+                catch
+                    list_of_peaks{n} = [mz'; zeros(1,length(spectrum))];
+                end
             else
                 for i = 1:size(ridges_ini,2)
                     ridges{i} = ridges_ini(:,i);
@@ -194,7 +198,11 @@ function [list_of_peaks,dims] = pp_mode(filename, options)
 
                 end
                 if isempty(peaks)
-                    list_of_peaks{n} = [mz; zeros(1,length(spectrum))];
+                    try
+                        list_of_peaks{n} = [mz; zeros(1,length(spectrum))];
+                    catch
+                        list_of_peaks{n} = [mz'; zeros(1,length(spectrum))];
+                    end
                 else
                     [~,ia] = unique(peaks(1,:));
                     peaks = peaks(:,ia);
