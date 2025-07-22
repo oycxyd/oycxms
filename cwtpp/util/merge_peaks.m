@@ -13,7 +13,7 @@ for n = 1:length(indc)
         data_f = cat(2,data_f,data(:,n));
     else
         mz_f(end) = (mz_f(end)+mz(n))/2;
-        data_f(:,end) = data_f(:,end)+ data(:,n);
+        data_f(:,end) = (data_f(:,end)+ data(:,n));
     end
 end
 counter1.Destroy

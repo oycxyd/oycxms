@@ -31,11 +31,16 @@ function [mzs_output, ms_references] = msreffind(mode, options)
             end
         elseif strcmp(mode,'recal')
             disp('finding reference with recalibrated data.')
-            filenames=dir('*.raw');
+            filenames=[dir('*.raw');dir('*_recal.h5')];
             options.threshold = 30;
             for i = 1:length(filenames)
                 filename = filenames(i).name;
-                [datasets{i},dimes{i},mzs{i}]=h5toMat([filename,'\datacube_recal.h5']);
+                [~,~,ext] = fileparts(filename);
+                if strcmp(ext,'.raw')
+                    [datasets{i},dimes{i},mzs{i}]=h5toMat([filename,'\datacube_recal.h5']);
+                else
+                    [datasets{i},dimes{i},mzs{i}]=h5toMat([filename]);
+                end
     %             [~,dimes{i},mzs{i}]=h5toMat([filename,'\datacube.h5']);
     %             datasets = {};
             end

@@ -25,8 +25,13 @@ parfor n = 1:length(Sindex)
         spec = h5read(filename,['/SpectrumIntensity'],1,double(Sindex(n)));
         mz = h5read(filename,['/SpectrumMZ'],1,double(Sindex(n)));
     else
-        spec = h5read(filename,['/SpectrumIntensity'],double(Sindex(n-1))+1,double(Sindex(n)-Sindex(n-1)));
-        mz = h5read(filename,['/SpectrumMZ'],double(Sindex(n-1))+1,double(Sindex(n)-Sindex(n-1)));
+        try
+            spec = h5read(filename,['/SpectrumIntensity'],double(Sindex(n-1))+1,double(Sindex(n)-Sindex(n-1)));
+            mz = h5read(filename,['/SpectrumMZ'],double(Sindex(n-1))+1,double(Sindex(n)-Sindex(n-1)));
+        catch
+            spec = h5read(filename,['/SpectrumIntensity'],double(Sindex(n-1))+1,1);
+            mz = h5read(filename,['/SpectrumMZ'],double(Sindex(n-1))+1,1);
+        end
     end
     for i=2:length(mz)
         mz(i) = mz(i-1)+mz(i);
