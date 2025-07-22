@@ -31,8 +31,14 @@ end
 
 [list_of_peaks,dims] = pp_mode(filename,mode=mode,T0 = options.T0, ite = options.ite,Imin=options.Imin);
 if options.use_metadata == 1
-    mode = '.raw';
-    save([options.dir,'\cwtpeaks'],'list_of_peaks','dims')
+    [~,file,ext] = fileparts(options.dir);
+    if strcmp(ext,'.raw')
+        mode = '.raw';
+        save([options.dir,'\cwtpeaks'],'list_of_peaks','dims')
+    else
+        mode = '.mz5';
+        save([file,'_cwtpeaks'],'list_of_peaks','dims')
+    end
 else
     if strcmp(mode,'workspace') == 0
         if strcmp(mode,'.raw')

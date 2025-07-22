@@ -49,6 +49,7 @@ function [mzs_output, ms_references] = msreffind(mode, options)
             mzs = options.wsmzs;
         else
             filenames=dir('*.mz5');
+            % disp('finding reference in mz5 files.')
             for i = 1:length(filenames)
                 filename = filenames(i).name;filename = filename(1:end-4);
                 % [datasets{i},dimes{i},mzs{i}]=h5toMat([filename,'\datacube.h5']);

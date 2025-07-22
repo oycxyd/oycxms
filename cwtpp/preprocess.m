@@ -39,26 +39,9 @@ end
     logs = {};
     for n = 1:length(filenames)
         disp(['preprocessing file ',num2str(n),' of ',num2str(length(filenames))])
-%% TIC image & ROI detection
-% TIC_image = TIC(datacube1);
-% TIC_image = reshape(TIC_image,dims_n1);
-% TIC_image = TIC_image';
-% figure,imagesc(TIC_image);colormap('magma');axis image
-% 
-% % edge detection-based
-% % [mask, threshold] = edge(TIC_image,'sobel');
-% 
-% % clustering-based
-% [clusters,kcaimage] = cluster_analysis(3,Data_log,dims_n1);
-% mask = (clusters == 1);
-% mask = reshape(mask,dims_n1);
-% mask = mask';
-% 
-% figure,imagesc(TIC_image.*mask);colormap('magma');axis image
-
-%% peak detection w CWTPP
     try
         filename = filenames(n).name;
+        [~,~,ext] = fileparts(filename);
         if use_metadata == 1
             disp('using metadata!')
             meta_i = find(contains(metadata(:,2),filename));
@@ -66,7 +49,27 @@ end
             for p = 1:length(meta_i)
                 scans = cell2mat([metadata(meta_i(p),3),metadata(meta_i(p),4)]);             
                 for q = scans(1):scans(2)
-                    [mz,spectrum] = readraw2spec(filename,q);
+                    if strcmp(ext, '.raw')
+                        [mz,spectrum] = readraw2spec(filename,q);
+                    else
+                        options.mode = '.mz5';
+                        Sindex = h5read(filename,['/SpectrumIndex']);
+                        if q == 1
+                            spectrum = h5read(filename,['/SpectrumIntensity'],1,double(Sindex(q)))';
+                            mz = h5read(filename,['/SpectrumMZ'],1,double(Sindex(q)))';
+                        else
+                            try
+                                spectrum = h5read(filename,['/SpectrumIntensity'],double(Sindex(q-1))+1,double(Sindex(q)-Sindex(q-1)))';
+                                mz = h5read(filename,['/SpectrumMZ'],double(Sindex(q-1))+1,double(Sindex(q)-Sindex(q-1)))';
+                            catch
+                                spectrum = h5read(filename,['/SpectrumIntensity'],double(Sindex(q-1))+1,1)';
+                                mz = h5read(filename,['/SpectrumMZ'],double(Sindex(q-1))+1,1)';
+                            end
+                        end
+                        for i=2:length(mz)
+                            mz(i) = mz(i-1)+mz(i);
+                        end
+                    end
                     scan = cat(1,mz,spectrum);
                     data_select = cat(1,data_select,scan);
                 end
@@ -78,6 +81,7 @@ end
         end
         filename = filenames;
     end
+%% peak detection w CWTPP
     try
         if strcmp(options.TQswitch,'TQ')
             disp('TQ data!')
@@ -85,18 +89,19 @@ end
                 [cwtpeaks,dims] = raw2mat(filename);
                 dims = [dims(1)+1,dims(2)-1];
                 cwtpeaks = cwtpeaks(1:dims(1)*dims(2));
-            end
-            if contains(filename,'.imzML')
+                options.mode = '.raw';
+            elseif contains(filename,'.imzML')
                 disp('imzml')
                 [cwtpeaks,dims] = load_imzml(filename);
-            end
-            if contains(filename,'.mz5')
+                options.mode = '.imzml';
+            else
                 [cwtpeaks,dims] = mz5toMat(filename);
+                options.mode = '.mz5';
             end
-            options.mode = '.raw';
+            
         else
             if use_metadata == 1
-                [cwtpeaks,dims,options.mode] = cwtpp(data_select, T0 = options.T0, ite = options.ite, ...
+                    [cwtpeaks,dims,options.mode] = cwtpp(data_select, T0 = options.T0, ite = options.ite, ...
                     Imin = options.Imin,use_metadata=1,dir=filename);
             else
                 [cwtpeaks,dims,options.mode] = cwtpp(filename,T0 = options.T0, ite = options.ite, ...
@@ -144,6 +149,9 @@ end
         end
     
 %% save datacube to h5
+        if isempty(dims)
+            dims = [0; 0];
+        end
         if strcmp(options.mode,'.raw')
             if contains(filename,'.raw')
                 if isfile([filename,'/datacube.h5']) == 0
