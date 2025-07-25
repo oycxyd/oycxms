@@ -307,6 +307,7 @@ function [data_aligned, mz_recal, I] = dtwa(path,mode,options)
                 end
             else
                 filename = filenames(I(n+1)).name;
+                out_dir= filename;
                 data2 = h5toMat([filename,'\datacube.h5']);
             end
         end
