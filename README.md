@@ -20,7 +20,9 @@ select 'mz5' format and use all default parameters.
 
 (Should you for some reason want to work with .raw files, you will stil need to install Windows SDK7 for Matlab as per instructions here:)
 
-https://uk.mathworks.com/matlabcentral/answers/101105-how-do-i-install-microsoft-windows-sdk-7-1 (**no longer available, please download from link below**)
+https://uk.mathworks.com/matlabcentral/answers/101105-how-do-i-install-microsoft-windows-sdk-7-1 
+
+(**the official link for the SDK is no longer available please download from link below**)
 
 [https://www.dropbox.com/scl/fo/p27kwayp9mrz3tvqvnh1i/AI3-P76BoJus89o8-6hPlMg?rlkey=0fxxkjjqwoa7uxufmzhn1bhrr&st=kx5rbzsc&dl=0](https://www.dropbox.com/scl/fo/p27kwayp9mrz3tvqvnh1i/AI3-P76BoJus89o8-6hPlMg?rlkey=0fxxkjjqwoa7uxufmzhn1bhrr&st=mxznmi56&dl=0)
 
