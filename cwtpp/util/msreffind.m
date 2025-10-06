@@ -2,7 +2,7 @@ function [mzs_output, ms_references] = msreffind(mode, options)
     arguments
         mode (1,:) char
         options.path (1,:) = pwd
-        options.threshold (1,:) {mustBeNumeric,mustBeReal} = 300
+        options.threshold (1,:) {mustBeNumeric,mustBeReal} = 100
         options.wsdatasets = []
         options.wsmzs = []
     end
@@ -32,7 +32,7 @@ function [mzs_output, ms_references] = msreffind(mode, options)
         elseif strcmp(mode,'recal')
             disp('finding reference with recalibrated data.')
             filenames=[dir('*.raw');dir('*_recal.h5')];
-            options.threshold = 30;
+            options.threshold = 50;
             for i = 1:length(filenames)
                 filename = filenames(i).name;
                 [~,~,ext] = fileparts(filename);

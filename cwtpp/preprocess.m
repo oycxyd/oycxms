@@ -8,7 +8,10 @@ arguments
     options.mode string = '.raw'
     options.T0 {mustBeNumeric} = 1000;% default parameters for simulated annealing, can be optimised
     options.ite {mustBeNumeric} = 100;
-    options.Imin {mustBeNumeric} = 1000;
+    options.Nparticles {mustBeNumeric} = 1/2;
+    options.Imin {mustBeNumeric} = 100;
+    options.G {mustBeNumeric} = 3;
+    options.L {mustBeNumeric} = 2;
     options.pmthresh = [];
 end
 % tic

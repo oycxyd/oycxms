@@ -5,12 +5,13 @@ function [list_of_peaks,dims] = pp_mode(filename, options)
     arguments
         filename
         options.mode string = '.raw';
-        options.T0 {mustBeNumeric} = 1000;
+        options.T0 {mustBeNumeric} = 500;
         options.ite {mustBeNumeric} = 100;
         options.Nparticles {mustBeNumeric} = 1/2;
-        options.Imin {mustBeNumeric} = 100;
+        options.nf {mustBeNumeric} = 0.1;
+        options.Imin {mustBeNumeric} = 1000;
         options.G {mustBeNumeric} = 3;
-        options.L {mustBeNumeric} = 2;
+        options.L {mustBeNumeric} = 3;
     end
     
     list_of_peaks = {};
@@ -92,18 +93,12 @@ function [list_of_peaks,dims] = pp_mode(filename, options)
 
     %% crazy-climber/other max. finding
         [rows,cols] = size(wcoefs);
-        % if isempty(options.Nparticles)
-        %     disp('default Nparticles')
-        %     Nparticles = floor(cols * rows/2); % number recommended by Zheng et al.
-        % else
-        %     Nparticles = options.Nparticles;
-        % end
         Nparticles = floor(cols * rows*options.Nparticles);
-        Tf = 0;
-        T = [options.T0:(Tf-options.T0)/(options.ite-1):Tf];
-         % its_per_stage = rows*4;
+        % its_per_stage = rows*4;
         % T0 = 500;
         % ite = 100;
+        Tf = 0;
+        T = [options.T0:(Tf-options.T0)/(options.ite-1):Tf];
         % T = 500*[ones(1, its_per_stage)*1 ones(1, its_per_stage)*.1 ones(1, its_per_stage)*.01 ones(1, its_per_stage)*.001]; 
         % not sure what this does, need to read about simulated annealing
         % T = [500 400 300 200 100];
@@ -113,14 +108,14 @@ function [list_of_peaks,dims] = pp_mode(filename, options)
             % figure,imagesc(ridgetable);colorMap = jet(256);colormap(colorMap); colorbar;
             ridgetable = flipud(-ridgetable);
             try
-                ridgetable = round(spectrum.*(ridgetable));
+                ridgetable = round(spectrum.*(ridgetable))-round(Nparticles*options.nf);
             catch
-                ridgetable = round(spectrum'.*(ridgetable));
+                ridgetable = round(spectrum'.*(ridgetable))-round(Nparticles*options.nf);
             end
         else
             ridgetable = flipud(wcoefs);
         end
-        % ridgetable(ridgetable<0)=0;
+        ridgetable(ridgetable<0)=0;
     % find local maxima for all levels
             maxima = {};
             for i = 1:length(scales)

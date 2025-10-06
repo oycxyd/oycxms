@@ -5,7 +5,7 @@ function [data_aligned, mz_recal, I] = dtwa(path,mode,options)
     arguments
         path (1,:) = pwd
         mode (1,:) char = 'raw'
-        options.matchppm (1,:) {mustBeNumeric,mustBeReal} = 300
+        options.matchppm (1,:) {mustBeNumeric,mustBeReal} = 100
         options.save = 1
     end
     if isempty(path)
@@ -49,7 +49,7 @@ function [data_aligned, mz_recal, I] = dtwa(path,mode,options)
             end
         elseif strcmp(mode, 'recal')
             disp('using recalibrated data.')
-            options.matchppm = 30;
+            options.matchppm = 50;
             filenames=[dir('*.raw');dir('*_recal.h5')];
             for i = 1:length(filenames)
                 filename = filenames(i).name;
@@ -196,8 +196,14 @@ function [data_aligned, mz_recal, I] = dtwa(path,mode,options)
 %     end
 %% DTW-based alignment
     % mz_recal = mzs{1};
-    % mz_recal = cwt2cmz(mzs_recal,'minFreq',round(length(mzs)*0.1),'ppm',options.matchppm);
-    mz_recal = unique(cell2mat(mzs_recal));
+    % mz_low = min(unique(round(cell2mat(mzs_recal),4)));
+    mz_low = 100;
+    % mz_high = max(unique(round(cell2mat(mzs_recal),4)));
+    mz_high = 1000;
+    mz_recal = cwt2cmz(mzs_recal,'minFreq',round(length(mzs)*0.2), ...
+        'mzRange',[mz_low mz_high], ...
+        'ppm',options.matchppm);
+    % mz_recal = unique(round(cell2mat(mzs_recal),4));
     % test = diff(mz_recal);test = cat(2,1,test);indc = (test>0.01);
     % mz_recal = mz_recal(indc);
     if strcmp(mode,'workspace')
@@ -205,9 +211,10 @@ function [data_aligned, mz_recal, I] = dtwa(path,mode,options)
         if strcmp(method,'mz')
             [a,b] = maxent(mzs{1},datasets{1});
             [data1] = a*randn(size(datasets{1},1),length(mz_recal))+b;
-            [~,indd1,indd2] = intersect(round(mzs{1},4),round(mz_recal,4));
+            % [~,indd1,indd2] = intersect(round(mzs{1},4),round(mz_recal,4));
+            [indd1,indd2] = adaptmatch(mzs{1}, mz_recal);
             dum = datasets{1};data1(:,indd2) = dum(:,indd1);
-            [mz_recal_f,data1] = merge_peaks(mz_recal,data1,0.001);
+            % [mz_recal_f,data1] = merge_peaks(mz_recal,data1,0.001);
             % [data1]=mzmatchfill(mzs{1},datasets{1},mz_recal,options.matchppm);
         end
         data_aligned{1} = data1;
@@ -232,9 +239,10 @@ function [data_aligned, mz_recal, I] = dtwa(path,mode,options)
         if strcmp(method,'mz')
             [a,b] = maxent(mzs{1},data1);
             [data11] = a*randn(size(data1,1),length(mz_recal))+b;
-            [~,indd1,indd2] = intersect(round(mzs{1},4),round(mz_recal,4));
+            % [~,indd1,indd2] = intersect(round(mzs{1},1),round(mz_recal,1));
+            [indd1,indd2] = adaptmatch(mzs{1}, mz_recal);
             data11(:,indd2) = data1(:,indd1);
-            [mz_recal_f,data11] = merge_peaks(mz_recal,data11,0.001);
+            % [mz_recal_f,data11] = merge_peaks(mz_recal,data11,0.001);
             data1 = data11;
             % [data1]=mzmatchfill(mzs{1},data1,mz_recal,options.matchppm);
         end
@@ -245,10 +253,10 @@ function [data_aligned, mz_recal, I] = dtwa(path,mode,options)
                 delete([filename,'_aligned.h5'])
             end
             h5create([filename,'_aligned.h5'],'/datacube',size(data1))
-            h5create([filename,'_aligned.h5'],'/mz',size(mz_recal_f));
+            h5create([filename,'_aligned.h5'],'/mz',size(mz_recal));
             h5create([filename,'_aligned.h5'],'/dims',size(dimes{I(1)}));
             h5write([filename,'_aligned.h5'],'/datacube',data1)
-            h5write([filename,'_aligned.h5'],'/mz',mz_recal_f)
+            h5write([filename,'_aligned.h5'],'/mz',mz_recal)
             h5write([filename,'_aligned.h5'],'/dims',dimes{I(1)})
         elseif strcmp(mode,'recal')
             if contains(filename,'h5')
@@ -257,20 +265,20 @@ function [data_aligned, mz_recal, I] = dtwa(path,mode,options)
                     delete([filename,'_aligned.h5'])
                 end
                 h5create([filename,'_aligned.h5'],'/datacube',size(data1))
-                h5create([filename,'_aligned.h5'],'/mz',size(mz_recal_f));
+                h5create([filename,'_aligned.h5'],'/mz',size(mz_recal));
                 h5create([filename,'_aligned.h5'],'/dims',size(dimes{I(1)}));
                 h5write([filename,'_aligned.h5'],'/datacube',data1)
-                h5write([filename,'_aligned.h5'],'/mz',mz_recal_f)
+                h5write([filename,'_aligned.h5'],'/mz',mz_recal)
                 h5write([filename,'_aligned.h5'],'/dims',dimes{I(1)})
             else
                 if isfile([out_dir,'/datacube_aligned.h5']) > 0
                     delete([out_dir,'/datacube_aligned.h5'])
                 end
                 h5create([out_dir,'/datacube_aligned.h5'],'/datacube',size(data1))
-                h5create([out_dir,'/datacube_aligned.h5'],'/mz',size(mz_recal_f));
+                h5create([out_dir,'/datacube_aligned.h5'],'/mz',size(mz_recal));
                 h5create([out_dir,'/datacube_aligned.h5'],'/dims',size(dimes{I(1)}));
                 h5write([out_dir,'/datacube_aligned.h5'],'/datacube',data1)
-                h5write([out_dir,'/datacube_aligned.h5'],'/mz',mz_recal_f)
+                h5write([out_dir,'/datacube_aligned.h5'],'/mz',mz_recal)
                 h5write([out_dir,'/datacube_aligned.h5'],'/dims',dimes{I(1)})
             end
         else
@@ -278,10 +286,10 @@ function [data_aligned, mz_recal, I] = dtwa(path,mode,options)
                 delete([out_dir,'/datacube_aligned.h5'])
             end
             h5create([out_dir,'/datacube_aligned.h5'],'/datacube',size(data1))
-            h5create([out_dir,'/datacube_aligned.h5'],'/mz',size(mz_recal_f));
+            h5create([out_dir,'/datacube_aligned.h5'],'/mz',size(mz_recal));
             h5create([out_dir,'/datacube_aligned.h5'],'/dims',size(dimes{I(1)}));
             h5write([out_dir,'/datacube_aligned.h5'],'/datacube',data1)
-            h5write([out_dir,'/datacube_aligned.h5'],'/mz',mz_recal_f)
+            h5write([out_dir,'/datacube_aligned.h5'],'/mz',mz_recal)
             h5write([out_dir,'/datacube_aligned.h5'],'/dims',dimes{I(1)})
         end
     end
@@ -304,10 +312,12 @@ function [data_aligned, mz_recal, I] = dtwa(path,mode,options)
                     [data2]=h5toMat([filename]);
                 else
                     data2 = h5toMat([filename,'\datacube_recal.h5']);
+                    out_dir = filename;
                 end
             else
                 filename = filenames(I(n+1)).name;
                 data2 = h5toMat([filename,'\datacube.h5']);
+                out_dir = filename;
             end
         end
         % data_length(n) = size(data2,2);
@@ -328,10 +338,10 @@ function [data_aligned, mz_recal, I] = dtwa(path,mode,options)
         if strcmp(method,'mz')
             [a,b] = maxent(mz2,data2);
             data_dtw = a*randn(size(data2,1),length(mz_recal))+b;
-            [~,indd1,indd2] = intersect(round(mz2,4),round(mz_recal,4));
+            % [~,indd1,indd2] = intersect(round(mz2,4),round(mz_recal,4));
+            [indd1,indd2] = adaptmatch(mz2, mz_recal);
             data_dtw(:,indd2) = data2(:,indd1);
-            [~,data_dtw] = merge_peaks(mz_recal,data_dtw,0.001);
-            % [data_dtw]=mzmatchfill(mz2,data2,mz_recal,options.matchppm);
+            % [~,data_dtw] = merge_peaks(mz_recal,data_dtw,0.001);
         else
             counter1 = parfor_wait(size(data2,1), 'Waitbar', true);
             parfor j = 1:size(data2,1)
@@ -347,35 +357,38 @@ function [data_aligned, mz_recal, I] = dtwa(path,mode,options)
             disp('saving...');
             if strcmp(mode,'mz5')
                 if isfile([filename,'_aligned.h5']) > 0
+                    disp('Found existing aligned file. Saving over.')
                     delete([filename,'_aligned.h5'])
                 end
                 h5create([filename,'_aligned.h5'],'/datacube',size(data_dtw))
-                h5create([filename,'_aligned.h5'],'/mz',size(mz_recal_f));
+                h5create([filename,'_aligned.h5'],'/mz',size(mz_recal));
                 h5create([filename,'_aligned.h5'],'/dims',size(dimes{I(n+1)}));
                 h5write([filename,'_aligned.h5'],'/datacube',data_dtw)
-                h5write([filename,'_aligned.h5'],'/mz',mz_recal_f)
+                h5write([filename,'_aligned.h5'],'/mz',mz_recal)
                 h5write([filename,'_aligned.h5'],'/dims',dimes{I(n+1)})
             elseif strcmp(mode,'recal')
                 if contains(filename,'.h5')
                     filename = filename(1:end-3);
                     if isfile([filename,'_aligned.h5']) > 0
+                        disp('Found existing aligned file. Saving over.')
                         delete([filename,'_aligned.h5'])
                     end
                     h5create([filename,'_aligned.h5'],'/datacube',size(data_dtw))
-                    h5create([filename,'_aligned.h5'],'/mz',size(mz_recal_f));
+                    h5create([filename,'_aligned.h5'],'/mz',size(mz_recal));
                     h5create([filename,'_aligned.h5'],'/dims',size(dimes{I(n+1)}));
                     h5write([filename,'_aligned.h5'],'/datacube',data_dtw)
-                    h5write([filename,'_aligned.h5'],'/mz',mz_recal_f)
+                    h5write([filename,'_aligned.h5'],'/mz',mz_recal)
                     h5write([filename,'_aligned.h5'],'/dims',dimes{I(n+1)})
                 else
                     if isfile([out_dir,'/datacube_aligned.h5']) > 0
+                        disp('Found existing aligned file. Saving over.')
                         delete([out_dir,'/datacube_aligned.h5'])
                     end
                     h5create([out_dir,'/datacube_aligned.h5'],'/datacube',size(data_dtw))
-                    h5create([out_dir,'/datacube_aligned.h5'],'/mz',size(mz_recal_f));
+                    h5create([out_dir,'/datacube_aligned.h5'],'/mz',size(mz_recal));
                     h5create([out_dir,'/datacube_aligned.h5'],'/dims',size(dimes{I(n+1)}));
                     h5write([out_dir,'/datacube_aligned.h5'],'/datacube',data_dtw)
-                    h5write([out_dir,'/datacube_aligned.h5'],'/mz',mz_recal_f)
+                    h5write([out_dir,'/datacube_aligned.h5'],'/mz',mz_recal)
                     h5write([out_dir,'/datacube_aligned.h5'],'/dims',dimes{I(n+1)})
                 end
             else
@@ -383,10 +396,10 @@ function [data_aligned, mz_recal, I] = dtwa(path,mode,options)
                     delete([out_dir,'/datacube_aligned.h5'])
                 end
                 h5create([out_dir,'/datacube_aligned.h5'],'/datacube',size(data_dtw))
-                h5create([out_dir,'/datacube_aligned.h5'],'/mz',size(mz_recal_f));
+                h5create([out_dir,'/datacube_aligned.h5'],'/mz',size(mz_recal));
                 h5create([out_dir,'/datacube_aligned.h5'],'/dims',size(dimes{I(n+1)}));
                 h5write([out_dir,'/datacube_aligned.h5'],'/datacube',data_dtw)
-                h5write([out_dir,'/datacube_aligned.h5'],'/mz',mz_recal_f)
+                h5write([out_dir,'/datacube_aligned.h5'],'/mz',mz_recal)
                 h5write([out_dir,'/datacube_aligned.h5'],'/dims',dimes{I(n+1)})
             end
         else
@@ -442,6 +455,11 @@ function [data_aligned, mz_recal, I] = dtwa(path,mode,options)
     %         new_mz = new_mz + coefs(end-p+1)*mz_recal.^(p-1);
     %     end
     % end
+    %%
+    % [indd1,indd2] = adaptmatch(mzs{1}, mz_recal);
+    % [a,b] = maxent(mzs{1},data1);
+
+    %%
 function [a,b,ent] = maxent(mz,data)
     ent = [];
     for i = 1:length(mz)
@@ -449,6 +467,30 @@ function [a,b,ent] = maxent(mz,data)
     end
     [~,ii] =  max(ent);
     a = sqrt(std(data(:,ii)))/100;b = mean(data(:,ii))/100;
+
+function [ind1,ind2] = adaptmatch(mz, mz_recal)
+    for n = 1:length(mz_recal)
+        [dif(n),ind1(n)] = min(abs(mz-mz_recal(n)));
+    end
+    ini = mean(dif)/10;rmse = sqrt(abs(sum(dif-ini*sqrt(mz_recal))))/length(dif);
+    sign = 1;
+    while true
+        step = ini/10;
+        ini = ini+step*sign;
+        rmse_new = sqrt(abs(sum(dif-ini*sqrt(mz_recal))))/length(dif);
+        if rmse_new > rmse
+            sign = sign*-1;
+        end
+        if rmse_new-rmse < rmse/100
+            break
+        end
+        rmse = rmse_new;
+    end
+    ppm_dis = ini*sqrt(mz_recal);
+    margin = 1.1;
+    matched = (dif<= ppm_dis*margin);
+    ind1 = ind1(matched);[ind1,iu] = unique(ind1);
+    ind2 = (1:n);ind2 = ind2(matched);ind2 = ind2(iu);
 
 % function [data_aligned]=mzmatchfill(mz_in,data_in,mz_recal,thresh)
 %     [a,b] = maxent(mz_in,data_in);
