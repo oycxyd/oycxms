@@ -1,5 +1,5 @@
 function [output] = h5toCSV()
-try
+% try
     dname = uigetdir();
     cd (dname);
     filenames=dir('*.raw');
@@ -47,9 +47,9 @@ try
     % output = cat(2,labels2,output);
     
     writecell(output,'aligned_for_postprocessing.csv')   
-catch
-    warning('no preprocessed files found?');
-end
+% catch
+%     warning('no preprocessed files found?');
+% end
 % 
 % cells = unique(metadata(:,3));
 % GD = metadata(:,3);

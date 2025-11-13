@@ -197,9 +197,9 @@ function [data_aligned, mz_recal, I] = dtwa(path,mode,options)
 %% DTW-based alignment
     % mz_recal = mzs{1};
     % mz_low = min(unique(round(cell2mat(mzs_recal),4)));
-    mz_low = 100;
+    mz_low = 50;
     % mz_high = max(unique(round(cell2mat(mzs_recal),4)));
-    mz_high = 1000;
+    mz_high = 1200;
     mz_recal = cwt2cmz(mzs_recal,'minFreq',round(length(mzs)*0.2), ...
         'mzRange',[mz_low mz_high], ...
         'ppm',options.matchppm);

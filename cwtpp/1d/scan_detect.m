@@ -23,12 +23,13 @@ for i = 1:length(filenames)
         [pks,locs] = findpeaks(chromo,'MinPeakProminence',mean(chromo)/2,'MinPeakDistance',3);
         % figure,plot(chromo)
         % hold on
-        % scatter(locs,pks)
+        % stem(locs,pks)
+        peak_width = 3;
         if ~isempty(locs)
             for n = 1:length(locs)
                 files = cat(1,files,filename);
-                start_scan = cat(1,start_scan,locs(n)-1);
-                end_scan = cat(1,end_scan,locs(n)+1);
+                start_scan = cat(1,start_scan,locs(n)-peak_width);
+                end_scan = cat(1,end_scan,locs(n)+peak_width);
                 labels = cat(1,labels,'TBD');
                 samples = cat(1,samples,i);
             end

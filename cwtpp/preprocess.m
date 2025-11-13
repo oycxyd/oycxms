@@ -56,7 +56,12 @@ end
                         [mz,spectrum] = readraw2spec(filename,q);
                     else
                         options.mode = '.mz5';
-                        Sindex = h5read(filename,['/SpectrumIndex']);
+                        Sindex = double(h5read(filename,['/SpectrumIndex']));
+                        if find(round(Sindex/1e9,4)==round(2^32/1e9,4)) % to correct for 32-bit overflow
+                            disp('overflow in Sindex detected. Correcting...')
+                            f_ind = find(round(Sindex/1e9,4)==round(2^32/1e9,4));
+                            Sindex(f_ind+1:end) = Sindex(f_ind+1:end)+2^32;
+                        end
                         if q == 1
                             spectrum = h5read(filename,['/SpectrumIntensity'],1,double(Sindex(q)))';
                             mz = h5read(filename,['/SpectrumMZ'],1,double(Sindex(q)))';

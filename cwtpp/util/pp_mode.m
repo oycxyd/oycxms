@@ -35,7 +35,12 @@ function [list_of_peaks,dims] = pp_mode(filename, options)
         disp('loading from workspace')
     end
     if strcmp(options.mode, '.mz5')
-        Sindex = h5read(filename,['/SpectrumIndex']);numS = length(Sindex);
+        Sindex = double(h5read(filename,['/SpectrumIndex']));numS = length(Sindex);
+        if find(round(Sindex/1e9,4)==round(2^32/1e9,4)) % to correct for 32-bit overflow
+            disp('overflow in Sindex detected. Correcting...')
+            f_ind = find(round(Sindex/1e9,4)==round(2^32/1e9,4));
+            Sindex(f_ind+1:end) = Sindex(f_ind+1:end)+2^32;
+        end
         chromoT=h5read(filename,['/ChomatogramTime']);
         [~,locs] = findpeaks(diff(chromoT),'MinPeakProminence',mean(diff(chromoT)));
         if floor(length(Sindex)/unique(diff(locs))) ~= length(Sindex)/unique(diff(locs))
