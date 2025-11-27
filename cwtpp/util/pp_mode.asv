@@ -5,13 +5,12 @@ function [list_of_peaks,dims] = pp_mode(filename, options)
     arguments
         filename
         options.mode string = '.raw';
-        options.T0 {mustBeNumeric} = 500;
+        options.T0 {mustBeNumeric} = 1000;
         options.ite {mustBeNumeric} = 100;
         options.Nparticles {mustBeNumeric} = 1/2;
-        options.nf {mustBeNumeric} = 0.1;
-        options.Imin {mustBeNumeric} = 1000;
+        options.Imin {mustBeNumeric} = 100;
         options.G {mustBeNumeric} = 3;
-        options.L {mustBeNumeric} = 3;
+        options.L {mustBeNumeric} = 2;
     end
     
     list_of_peaks = {};
@@ -36,7 +35,7 @@ function [list_of_peaks,dims] = pp_mode(filename, options)
         disp('loading from workspace')
     end
     if strcmp(options.mode, '.mz5')
-        Sindex = h5read(filename,['/SpectrumIndex']);numS = length(Sindex);
+        Sindex = double(h5read(filename,['/SpectrumIndex']));numS = length(Sindex);
         chromoT=h5read(filename,['/ChomatogramTime']);
         [~,locs] = findpeaks(diff(chromoT),'MinPeakProminence',mean(diff(chromoT)));
         if floor(length(Sindex)/unique(diff(locs))) ~= length(Sindex)/unique(diff(locs))
@@ -56,7 +55,15 @@ function [list_of_peaks,dims] = pp_mode(filename, options)
             dims_x(n) = xy(1);
             dims_y(n) = xy(2);
         elseif strcmp(mode{1}, '.mz5')
-            Sindex = h5read(filename,['/SpectrumIndex']);
+            Sindex = double(h5read(filename,['/SpectrumIndex']));
+            if find(floor(Sindex/1e9,4)==round(2^32/1e9,4)) % to correct for 32-bit overflow
+                disp('overflow in Sindex detected. Correcting...')
+                f_ind = find(abs(round(Sindex/1e9,4)-round(2^32/1e9,4))<1e-4);
+                for i = 1:length(f_ind)
+                    Sindex(f_ind(i)+1:end) = Sindex(f_ind(i)+1:end)+2^32;
+                end
+                % figure,plot(Sindex)
+            end
             if n == 1
                 spectrum = h5read(filename,['/SpectrumIntensity'],1,double(Sindex(n)));
                 mz = h5read(filename,['/SpectrumMZ'],1,double(Sindex(n)));
@@ -93,12 +100,18 @@ function [list_of_peaks,dims] = pp_mode(filename, options)
 
     %% crazy-climber/other max. finding
         [rows,cols] = size(wcoefs);
+        % if isempty(options.Nparticles)
+        %     disp('default Nparticles')
+        %     Nparticles = floor(cols * rows/2); % number recommended by Zheng et al.
+        % else
+        %     Nparticles = options.Nparticles;
+        % end
         Nparticles = floor(cols * rows*options.Nparticles);
-        % its_per_stage = rows*4;
-        % T0 = 500;
-        % ite = 100;
         Tf = 0;
         T = [options.T0:(Tf-options.T0)/(options.ite-1):Tf];
+         % its_per_stage = rows*4;
+        % T0 = 500;
+        % ite = 100;
         % T = 500*[ones(1, its_per_stage)*1 ones(1, its_per_stage)*.1 ones(1, its_per_stage)*.01 ones(1, its_per_stage)*.001]; 
         % not sure what this does, need to read about simulated annealing
         % T = [500 400 300 200 100];
@@ -108,14 +121,14 @@ function [list_of_peaks,dims] = pp_mode(filename, options)
             % figure,imagesc(ridgetable);colorMap = jet(256);colormap(colorMap); colorbar;
             ridgetable = flipud(-ridgetable);
             try
-                ridgetable = round(spectrum.*(ridgetable))-round(Nparticles*options.nf);
+                ridgetable = round(spectrum.*(ridgetable));
             catch
-                ridgetable = round(spectrum'.*(ridgetable))-round(Nparticles*options.nf);
+                ridgetable = round(spectrum'.*(ridgetable));
             end
         else
             ridgetable = flipud(wcoefs);
         end
-        ridgetable(ridgetable<0)=0;
+        % ridgetable(ridgetable<0)=0;
     % find local maxima for all levels
             maxima = {};
             for i = 1:length(scales)

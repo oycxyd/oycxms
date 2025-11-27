@@ -6,7 +6,7 @@ function [mzs_output, ms_references] = msreffind(mode, options)
         options.wsdatasets = []
         options.wsmzs = []
     end
-
+    
     datasets = {};mzs = {};
     if isempty(nargin)
         dname = uigetdir();
@@ -32,7 +32,6 @@ function [mzs_output, ms_references] = msreffind(mode, options)
         elseif strcmp(mode,'recal')
             disp('finding reference with recalibrated data.')
             filenames=[dir('*.raw');dir('*_recal.h5')];
-            options.threshold = 50;
             for i = 1:length(filenames)
                 filename = filenames(i).name;
                 [~,~,ext] = fileparts(filename);
