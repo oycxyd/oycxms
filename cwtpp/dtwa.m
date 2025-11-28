@@ -37,7 +37,7 @@ function [data_aligned, mz_recal, I] = dtwa(path,mode,options)
             varargin{3} = 'workspace';
         end
         filenames=dir('*.raw');
-        datasets = {};mzs = {};
+        datasets = {};mzs = {};dimes = {};
         
         if strcmp(mode, 'msp')
             disp('using resampled data.')
@@ -70,9 +70,9 @@ function [data_aligned, mz_recal, I] = dtwa(path,mode,options)
             options.save = 0;
         elseif strcmp(mode, 'raw')
             for i = 1:length(filenames)
-            filename = filenames(i).name;
-            [~,dimes{i},mzs{i}]=h5toMat([filename,'\datacube.h5']);
-%             datasets = {};
+                filename = filenames(i).name;
+                % disp(filename)
+                [~,dimes{i},mzs{i}]=h5toMat([filename,'\datacube.h5']);
             end
         else
             disp('detected mz5 files.')

@@ -39,9 +39,9 @@ KCAmask(data_norm,dims);
 
 % can also do this manually by KCA segmentation
 [kcadata,Imagekca,C] = cluster_analysis((data_norm),dims,3);
-mask = (kcadata==1|kcadata==2);% here cluster 2 & 3, check cluster images accordingly
+mask = (kcadata==2|kcadata==3);% here cluster 2 & 3, check cluster images accordingly
 mask = reshape(mask,dims);
-% mask = imfill(mask,'holes');
+mask = imfill(mask,'holes');
 figure,imagesc(mask);axis image
 
 %% filter data matrix with mask & do unsupervised visualisation (dimension reduction + segmentation)
@@ -89,7 +89,7 @@ figure,imshow(BF)
 
 % define 'moving' & 'fixed' images and start co-reg routine
 moving = sum(BF,3).*BF_mask;
-fixed = TICimg(data,dims,0).*mask;
+fixed = TICimg(data,dims,0).*mask';
 [image_out, tforms] = coreg_routine(moving,fixed);
 
 % visualise results - here BF vs an ion image
