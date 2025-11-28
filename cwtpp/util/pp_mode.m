@@ -36,11 +36,6 @@ function [list_of_peaks,dims] = pp_mode(filename, options)
     end
     if strcmp(options.mode, '.mz5')
         Sindex = double(h5read(filename,['/SpectrumIndex']));numS = length(Sindex);
-        if find(round(Sindex/1e9,4)==round(2^32/1e9,4)) % to correct for 32-bit overflow
-            disp('overflow in Sindex detected. Correcting...')
-            f_ind = find(round(Sindex/1e9,4)==round(2^32/1e9,4));
-            Sindex(f_ind+1:end) = Sindex(f_ind+1:end)+2^32;
-        end
         chromoT=h5read(filename,['/ChomatogramTime']);
         [~,locs] = findpeaks(diff(chromoT),'MinPeakProminence',mean(diff(chromoT)));
         if floor(length(Sindex)/unique(diff(locs))) ~= length(Sindex)/unique(diff(locs))
@@ -60,7 +55,16 @@ function [list_of_peaks,dims] = pp_mode(filename, options)
             dims_x(n) = xy(1);
             dims_y(n) = xy(2);
         elseif strcmp(mode{1}, '.mz5')
-            Sindex = h5read(filename,['/SpectrumIndex']);
+            Sindex = double(h5read(filename,['/SpectrumIndex']));
+            if find(round(Sindex/1e9,4)==round(2^32/1e9,4)) % to correct for 32-bit overflow
+                f_ind = find(abs(round(Sindex/1e9,4)-round(2^32/1e9,4))<1e-4);
+                f_ind((diff(f_ind)<10)) = [];
+                disp(['overflow in Sindex detected. Correcting ',num2str(length(f_ind)),' discontinuities...'])
+                for i = 1:length(f_ind)
+                    Sindex(f_ind(i)+1:end) = Sindex(f_ind(i)+1:end)+2^32;
+                end
+                % figure,plot(Sindex)
+            end
             if n == 1
                 spectrum = h5read(filename,['/SpectrumIntensity'],1,double(Sindex(n)));
                 mz = h5read(filename,['/SpectrumMZ'],1,double(Sindex(n)));
