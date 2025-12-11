@@ -82,8 +82,13 @@ end
 label=label';
 ID=ID';
 
-output=cat(1,mz,output);
-output=cat(2,label,num2cell(output));
+if iscell(mz)
+    output=cat(1,mz,num2cell(output));
+    output=cat(2,label,(output));
+else
+    output=cat(1,mz,output);
+    output=cat(2,label,num2cell(output));
+end
 output=cat(2,ID,output);
 
 answer = questdlg('save to a CSV file?', ...
