@@ -37,7 +37,7 @@ function [data_aligned, mz_recal, I] = dtwa(path,mode,options)
             varargin{3} = 'workspace';
         end
         filenames=dir('*.raw');
-        datasets = {};mzs = {};dimes = {};
+        datasets = {};mzs = {};
         
         if strcmp(mode, 'msp')
             disp('using resampled data.')
@@ -49,9 +49,7 @@ function [data_aligned, mz_recal, I] = dtwa(path,mode,options)
             end
         elseif strcmp(mode, 'recal')
             disp('using recalibrated data.')
-            if options.matchppm > 50
-                options.matchppm = 50;
-            end
+            options.matchppm = 50;
             filenames=[dir('*.raw');dir('*_recal.h5')];
             for i = 1:length(filenames)
                 filename = filenames(i).name;
@@ -72,9 +70,9 @@ function [data_aligned, mz_recal, I] = dtwa(path,mode,options)
             options.save = 0;
         elseif strcmp(mode, 'raw')
             for i = 1:length(filenames)
-                filename = filenames(i).name;
-                % disp(filename)
-                [~,dimes{i},mzs{i}]=h5toMat([filename,'\datacube.h5']);
+            filename = filenames(i).name;
+            [~,dimes{i},mzs{i}]=h5toMat([filename,'\datacube.h5']);
+%             datasets = {};
             end
         else
             disp('detected mz5 files.')
@@ -112,17 +110,13 @@ function [data_aligned, mz_recal, I] = dtwa(path,mode,options)
     
     if strcmp(method,'mz')
         disp('aligning using mz')
-        if length(mzs) > 2
-            mean_length=median(lens);
-        else
-            mean_length=max(lens);
-        end
+        mean_length=median(lens);
+        % mean_length=max(lens);
         [~,ind1]=min(abs(lens-mean_length));
         I = 1:length(mzs);
         % dum1 = datasets;
         if strcmp(mode, 'recal')
-            [mzs_recal, ms_references] = msreffind('recal', ...
-                threshold = options.matchppm);
+            [mzs_recal, ms_references] = msreffind('recal');
         else
             if strcmp(mode, 'workspace')
                 [mzs_recal, ms_references] = msreffind('workspace', ...
@@ -203,11 +197,13 @@ function [data_aligned, mz_recal, I] = dtwa(path,mode,options)
 %% DTW-based alignment
     % mz_recal = mzs{1};
     % mz_low = min(unique(round(cell2mat(mzs_recal),4)));
-    mz_low = 50;
+    mz_low = 100;
     % mz_high = max(unique(round(cell2mat(mzs_recal),4)));
+    mz_high = 1000;
+    mz_recal = cwt2cmz(mzs_recal,'minFreq',round(length(mzs)*0.2), ...
     mz_high = 1200;
     disp(['using a threshold of ',num2str(options.matchppm), ' ppm'])
-    mz_recal = cwt2cmz(mzs,'minFreq',ceil(length(mzs)*0.2), ...
+    mz_recal = cwt2cmz(mzs,'minFreq',ceil(length(mzs)*0.4), ...
         'mzRange',[mz_low mz_high], ...
         'ppm',options.matchppm);
     % mz_recal = unique(round(cell2mat(mzs_recal),4));
@@ -218,13 +214,17 @@ function [data_aligned, mz_recal, I] = dtwa(path,mode,options)
         if strcmp(method,'mz')
             [a,b] = maxent(mzs{1},datasets{1});
             [data1] = a*randn(size(datasets{1},1),length(mz_recal))+b;
+            % [~,indd1,indd2] = intersect(round(mzs{1},4),round(mz_recal,4));
+            [indd1,indd2] = adaptmatch(mzs{1}, mz_recal);
             if strcmp(mode,'recal')
-                [~,indd1,indd2] = intersect(round(mzs{1},3),round(mz_recal,3));
+                % [~,indd1,indd2] = intersect(round(mzs{1},1),round(mz_recal,1));
+                [indd1,indd2] = fixedmatch(mzs{1}, mz_recal,10^-(log10(median(diff(mz_recal))/min(diff(mz_recal)))/2));
             else
                 [indd1,indd2] = adaptmatch(mzs{1}, mz_recal);
             end
             dum = datasets{1};data1(:,indd2) = dum(:,indd1);
             % [mz_recal_f,data1] = merge_peaks(mz_recal,data1,0.001);
+            % [data1]=mzmatchfill(mzs{1},datasets{1},mz_recal,options.matchppm);
         end
         data_aligned{1} = data1;
     else 
@@ -248,8 +248,11 @@ function [data_aligned, mz_recal, I] = dtwa(path,mode,options)
         if strcmp(method,'mz')
             [a,b] = maxent(mzs{1},data1);
             [data11] = a*randn(size(data1,1),length(mz_recal))+b;
+            % [~,indd1,indd2] = intersect(round(mzs{1},1),round(mz_recal,1));
+            [indd1,indd2] = adaptmatch(mzs{1}, mz_recal);
             if strcmp(mode,'recal')
-                [~,indd1,indd2] = intersect(round(mzs{1},3),round(mz_recal,3));
+                % [~,indd1,indd2] = intersect(round(mzs{1},1),round(mz_recal,1));
+                [indd1,indd2] = fixedmatch(mzs{1}, mz_recal,10^-(log10(median(diff(mz_recal))/min(diff(mz_recal)))/2));
             else
                 [indd1,indd2] = adaptmatch(mzs{1}, mz_recal);
             end
@@ -350,8 +353,11 @@ function [data_aligned, mz_recal, I] = dtwa(path,mode,options)
         if strcmp(method,'mz')
             [a,b] = maxent(mz2,data2);
             data_dtw = a*randn(size(data2,1),length(mz_recal))+b;
+            % [~,indd1,indd2] = intersect(round(mz2,4),round(mz_recal,4));
+            [indd1,indd2] = adaptmatch(mz2, mz_recal);
             if strcmp(mode,'recal')
-                [~,indd1,indd2] = intersect(round(mz2,3),round(mz_recal,3));
+                % [~,indd1,indd2] = intersect(round(mz2,1),round(mz_recal,1));
+                [indd1,indd2] = fixedmatch(mz2, mz_recal, 10^-(log10(median(diff(mz_recal))/min(diff(mz_recal)))/2));
             else
                 [indd1,indd2] = adaptmatch(mz2, mz_recal);
             end
@@ -507,6 +513,13 @@ function [ind1,ind2] = adaptmatch(mz, mz_recal)
     ind1 = ind1(matched);[ind1,iu] = unique(ind1);
     ind2 = (1:n);ind2 = ind2(matched);ind2 = ind2(iu);
 
+function [ind1,ind2] = fixedmatch(mz, mz_recal, thresh)
+    for n = 1:length(mz_recal)
+        [dif(n),ind1(n)] = min(abs(mz-mz_recal(n)));
+    end
+    matched = (dif<=thresh);
+    ind1 = ind1(matched);[ind1,iu] = unique(ind1);
+    ind2 = (1:n);ind2 = ind2(matched);ind2 = ind2(iu);
 % function [data_aligned]=mzmatchfill(mz_in,data_in,mz_recal,thresh)
 %     [a,b] = maxent(mz_in,data_in);
 %     [data_aligned] = a*randn(size(data_in,1),length(mz_recal))+b;    
