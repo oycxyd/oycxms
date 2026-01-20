@@ -199,8 +199,6 @@ function [data_aligned, mz_recal, I] = dtwa(path,mode,options)
     % mz_low = min(unique(round(cell2mat(mzs_recal),4)));
     mz_low = 100;
     % mz_high = max(unique(round(cell2mat(mzs_recal),4)));
-    mz_high = 1000;
-    mz_recal = cwt2cmz(mzs_recal,'minFreq',round(length(mzs)*0.2), ...
     mz_high = 1200;
     disp(['using a threshold of ',num2str(options.matchppm), ' ppm'])
     mz_recal = cwt2cmz(mzs,'minFreq',ceil(length(mzs)*0.4), ...
