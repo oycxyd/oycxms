@@ -197,7 +197,7 @@ function [data_aligned, mz_recal, I] = dtwa(path,mode,options)
 %% DTW-based alignment
     % mz_recal = mzs{1};
     % mz_low = min(unique(round(cell2mat(mzs_recal),4)));
-    mz_low = 100;
+    mz_low = 50;
     % mz_high = max(unique(round(cell2mat(mzs_recal),4)));
     mz_high = 1200;
     disp(['using a threshold of ',num2str(options.matchppm), ' ppm'])
