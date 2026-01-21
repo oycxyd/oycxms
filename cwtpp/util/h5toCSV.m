@@ -2,7 +2,7 @@ function [output] = h5toCSV()
 % try
     dname = uigetdir();
     cd (dname);
-    filenames=dir('*.raw');
+    filenames=[dir('*.raw');dir('*_aligned.h5')];
 
     if exist('metadata.csv','file') > 0
             metadata = readcell('metadata.csv');
@@ -19,8 +19,13 @@ function [output] = h5toCSV()
     for i = 1:length(filenames)
         disp(i)
         filename = filenames(i).name;
+        [~,~,ext] = fileparts(filename);
         id = find(strcmp(metadata(:,2), filename));
-        [dum,~,mz]=h5toMat([filename,'\datacube_aligned.h5']);
+        if strcmp(ext, '.raw')
+            [dum,~,mz]=h5toMat([filename,'\datacube_aligned.h5']);
+        else
+            [dum,~,mz]=h5toMat([filename]);
+        end
         scan_num = 1;
         for j = 1:length(id)
             num_scans = cell2mat(metadata(id(j),4))-cell2mat(metadata(id(j),3));
