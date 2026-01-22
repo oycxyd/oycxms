@@ -20,11 +20,13 @@ function [output] = h5toCSV()
         disp(i)
         filename = filenames(i).name;
         [~,~,ext] = fileparts(filename);
-        id = find(strcmp(metadata(:,2), filename));
+        
         if strcmp(ext, '.raw')
             [dum,~,mz]=h5toMat([filename,'\datacube_aligned.h5']);
+            id = find(strcmp(metadata(:,2), filename));
         else
             [dum,~,mz]=h5toMat([filename]);
+            id = find(strcmp(metadata(:,2), [filename(1:end-11),'.mz5']));
         end
         scan_num = 1;
         for j = 1:length(id)
