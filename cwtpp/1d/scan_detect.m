@@ -1,7 +1,7 @@
 dname = uigetdir();
 %my dir, it will just go to root if this folder doesn't exist
 cd (dname);
-filenames=[dir('*.raw');dir('*.imzml')];
+filenames=[dir('*.raw');dir('*.imzml');dir('*.mz5')];
 
 labels = {};labels{1} = 'Class';labels = labels';
 samples = {};samples{1} = 'Sample';samples = samples';
@@ -12,14 +12,21 @@ errors = {};errors = errors';
 
 counter1 = parfor_wait(length(filenames), 'Waitbar', true);
 disp('detecting scans from raw file(s)')
-% for i = 185:length(filenames)
+
 for i = 1:length(filenames)
     counter1.Send;
     disp(['file ',num2str(i),'/',num2str(length(filenames))])
     filename = filenames(i).name;
+    [~,~,ext] = fileparts(filename);
     try
-        [raw_specs] = raw2mat(filename);
-        chromo = TIC(raw_specs);
+        if strcmp(ext, '.raw')
+            disp('detected raw files')
+            [raw_specs] = raw2mat(filename);
+            chromo = TIC(raw_specs);
+        else
+            disp('detected mz5 files')
+            [raw_specs,~,~,chromo] = mz5toMat(filename);
+        end
         [pks,locs] = findpeaks(chromo,'MinPeakProminence',mean(chromo)/2,'MinPeakDistance',3);
         % figure,plot(chromo)
         % hold on
