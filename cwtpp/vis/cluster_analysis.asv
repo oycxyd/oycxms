@@ -34,7 +34,7 @@ if plot == 1
     ax = uiaxes(fig, ...
     'Position', [50 50 500 300], ...
     'XTick', [], 'YTick', []);
-    imagesc(ax, Imagekca);colormap(ax,'jet');colorbar(ax);axis(ax, 'image');
+    imagesc(ax, Imagekca);colormap(ax,'jet');axis(ax, 'image');
   
     start_pos = [100 50 84 22];
     for m = 1:k
@@ -42,24 +42,20 @@ if plot == 1
         eval(['cbx',num2str(m),'.Value = 1;'])
         eval(['cbx',num2str(m),'.Position = [start_pos(1) start_pos(2)+50*m start_pos(3) start_pos(4)];'])
     end
-    % while true
-        for m = 1:k
-            eval(['cbx = cbx',num2str(m)])
-            cbx.ValueChangedFcn = @(src,event) cluster_onoff(src,event,ax,Imagekca,m);
-        end
-    % end
+    while true
+        cluster_onoff(k, Imagekca,ax);
+    end
 end
 toc
 end
 
-function cluster_onoff(src,event, ax,Imagekca,m)
-    val = event.Value;
-    if val == 0
-        Imagekca(Imagekca==m) = NaN;
-        imagesc(ax, Imagekca);colormap(ax,'jet');colorbar(ax);axis(ax, 'image');
-    else
-        Imagekca(Imagekca==m) = m;
-        imagesc(ax, Imagekca);colormap(ax,'jet');colorbar(ax);axis(ax, 'image');
+function cluster_onoff(src,event, k, Imagekca,ax)
+    for m = 1:k
+        eval(['val = cbx',num2str(m),'.Value;'])
+        if val == 0
+            Imagekca(Imagekca==m) = 0;
+            imagesc(ax, Imagekca);colormap(ax,'jet');axis(ax, 'image');
+        end
     end
 end
 
