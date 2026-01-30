@@ -1,0 +1,50 @@
+filenames=[dir('*_aligned.h5')];
+
+for n = 2:2
+    [data,dims,mz]=h5toMat(filenames(n).name);
+    ion_image(128.03,mz,data,dims,1,'magma');
+    clim([0 2000])
+    data_norm = log_trans(TIC_norm(data));
+    
+    k = 4;
+    [kcadata,Imagekca] = cluster_analysis((data_norm),dims,k,0);
+    fig = uifigure;
+    ax = uiaxes(fig, ...
+    'Position', [50 50 500 300], ...
+    'XTick', [], 'YTick', []);
+    imagesc(ax, Imagekca);colormap(ax,'jet');axis(ax, 'image');
+  
+    start_pos = [100 50 84 22];
+    for m = 1:k
+        eval(['cbx',num2str(m), '= uicheckbox(fig,"Text",num2str(m));'])
+        eval(['cbx',num2str(m),'.Value = 1;'])
+        eval(['cbx',num2str(m),'.Position = [start_pos(1) start_pos(2)+50*m start_pos(3) start_pos(4)];'])
+    end
+
+    answer = questdlg('which clusters?', ...
+        'Question');
+
+    while true
+        switch answer
+            case 'Yes'
+                disp([answer ' OK.'])
+                go = 1;
+            case 'No'
+                disp([answer ' OK.'])
+        end
+        if go == 1
+            break
+        end
+    end
+    mask = (kcadata==1|kcadata==2);% here cluster 2 & 3, check cluster images accordingly
+    mask = reshape(mask,dims);
+    mask = medfilt2(mask);
+    % se90 = strel('line',2,0);
+    % se0 = strel('line',2,90);
+    % mask = imdilate(mask,[se90 se0]);
+    mask = imfill(mask,'holes');
+    figure,imagesc(mask);axis image
+
+    h5create([filenames(n).name,'_mask.h5'],'/mask',size(double(mask)))
+    h5write([filenames(n).name,'_mask.h5'],'/mask',double(mask))
+end

@@ -41,6 +41,10 @@ KCAmask(data_norm,dims);
 [kcadata,Imagekca,C] = cluster_analysis((data_norm),dims,3);
 mask = (kcadata==2|kcadata==3);% here cluster 2 & 3, check cluster images accordingly
 mask = reshape(mask,dims);
+mask = medfilt2(mask);
+% se90 = strel('line',2,0);
+% se0 = strel('line',2,90);
+% mask = imdilate(mask,[se90 se0]);
 mask = imfill(mask,'holes');
 figure,imagesc(mask);axis image
 

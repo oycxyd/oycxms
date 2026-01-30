@@ -1,5 +1,6 @@
 function [mask] = KCAmask (data,dims)
     [~,Imagekca]= cluster_analysis((data),dims,2,0);
+    Imagekca = medfilt2(Imagekca);
     se90 = strel('line',2,90);
     se0 = strel('line',2,0);
     BW2dil = imdilate(Imagekca,[se90 se0]);
