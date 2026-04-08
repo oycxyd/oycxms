@@ -43,7 +43,11 @@ function [Image_dum,ppm] = ion_image(feature, mz, data, dims, plot_on_off,contra
             figure;imagesc(Image_dum);colormap(contrast); colorbar;
         end
         axis image
-        title(num2str(['m/z',' ',num2str(mz(ind))]));
+        if iscell(mz)
+            title(mz(ind))
+        else
+            title(num2str(['m/z',' ',num2str(mz(ind))]));
+        end
     end
     %     saveas(gcf,['Block',num2str(i),'_',num2str(feature),'.png'])
 end
