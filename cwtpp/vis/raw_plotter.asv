@@ -1,21 +1,21 @@
 function image = raw_plotter(ion,filename)
     [~,~,ext] = fileparts(filename);
+    image = [];
 
     if strcmp(ext,'.raw')
         [~,p2] = watersPackages(filename);
         numS = calllib('MassLynxRaw','getScansInFunction',p2,1);
-        image = zeros(numS, 1);
         disp('loading from raw file')
         parfor n = 1:numS
             [mz,spectrum,xy] = readraw2spec(filename,n);
             dims_x(n) = xy(1);
             dims_y(n) = xy(2);
-            try
-                [~,ind] = min(abs(mz-ion));
-                image(n) = spectrum(ind);
-            catch
-                image(n) = sum(spectrum(:));
-            end
+        end
+        [~,ind] = min(abs(mz-ion));
+        try
+            image(n,:) = sum(spectrum(:));
+        catch
+            image(n,:) = spectrum(ind);
         end
         dims = get2Dcoord((dims_x),(dims_y));
         dims = size(dims);
@@ -23,7 +23,6 @@ function image = raw_plotter(ion,filename)
     elseif strcmp(ext,'.mz5')
         disp('loading from mz5 file')
         Sindex = double(h5read(filename,['/SpectrumIndex']));
-        image = zeros(length(Sindex), 1);
         if find(round(Sindex/1e9,4)==round(2^32/1e9,4)) % to correct for 32-bit overflow
         f_ind = find(abs(round(Sindex/1e9,4)-round(2^32/1e9,4))<1e-4);
         f_ind((diff(f_ind)<10)) = [];
@@ -51,11 +50,11 @@ function image = raw_plotter(ion,filename)
             for i=2:length(mz)
                 mz(i) = mz(i-1)+mz(i);
             end
+            [~,ind] = min(abs(mz-ion));
             try
-                [~,ind] = min(abs(mz-ion));
-                image(n) = spectrum(ind);
+                image(n,:) = sum(spectrum(:));
             catch
-                image(n) = sum(spectrum(:));
+                image(n,:) = spectrum(ind);
             end
         end
     
