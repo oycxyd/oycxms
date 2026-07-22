@@ -25,11 +25,7 @@ else
     chromoT=h5read(filename,['/ChomatogramTime']);
     chromoI=h5read(filename,['/ChromatogramIntensity']);
     Sindex = double(h5read(filename,['/SpectrumIndex']));
-    if find(round(Sindex/1e9,4)==round(2^32/1e9,4)) % to correct for 32-bit overflow
-        disp('overflow in Sindex detected. Correcting...')
-        f_ind = find(round(Sindex/1e9,4)==round(2^32/1e9,4));
-        Sindex(f_ind+1:end) = Sindex(f_ind+1:end)+2^32;
-    end
+    Sindex = checkSindex(Sindex);
     raw_specs = {};
     tic
     parfor n = 1:length(Sindex)

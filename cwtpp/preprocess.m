@@ -8,11 +8,12 @@ arguments
     options.mode string = '.raw'
     options.T0 {mustBeNumeric} = 1000;% default parameters for simulated annealing, can be optimised
     options.ite {mustBeNumeric} = 100;
-    options.Nparticles {mustBeNumeric} = 1/2;
     options.Imin {mustBeNumeric} = 100;
+    options.Nparticles {mustBeNumeric} = 1/2;
     options.G {mustBeNumeric} = 3;
     options.L {mustBeNumeric} = 2;
     options.pmthresh = [];
+    options.autoparams = 1;
 end
 % tic
 %% load in raw data
@@ -57,11 +58,7 @@ end
                     else
                         options.mode = '.mz5';
                         Sindex = double(h5read(filename,['/SpectrumIndex']));
-                        if find(round(Sindex/1e9,4)==round(2^32/1e9,4)) % to correct for 32-bit overflow
-                            disp('overflow in Sindex detected. Correcting...')
-                            f_ind = find(round(Sindex/1e9,4)==round(2^32/1e9,4));
-                            Sindex(f_ind+1:end) = Sindex(f_ind+1:end)+2^32;
-                        end
+                        Sindex = checkSindex(Sindex);
                         if q == 1
                             spectrum = h5read(filename,['/SpectrumIntensity'],1,double(Sindex(q)))';
                             mz = h5read(filename,['/SpectrumMZ'],1,double(Sindex(q)))';
@@ -103,17 +100,36 @@ end
                 [cwtpeaks,dims] = load_imzml(filename);
                 options.mode = '.imzml';
             else
-                [cwtpeaks,dims] = mz5toMat(filename);
+                [cwtpeaks,dims] = mz5toMat(filename,mode='TQ');
                 options.mode = '.mz5';
             end
             
         else
             if use_metadata == 1
+                if options.autoparams
+                    cwtpp_params = infogsearch(data_select);
+                    disp(['IT-constrained hyperparameters: ','T0 = ',num2str(options.T0), ',  ','ite = ',num2str(options.ite), ',  ',...
+                        'Imin = ',num2str(cwtpp_params(1)),',  ','Nparticles = ',num2str(cwtpp_params(2)),',  ','G = ',num2str(cwtpp_params(3)),',  ', ...
+                        'L = ',num2str(cwtpp_params(4))])
+                    [cwtpeaks,dims,options.mode] = cwtpp(data_select,use_metadata=1,dir=filename,Imin=cwtpp_params(1),Nparticles = cwtpp_params(2),...
+                        G = cwtpp_params(3), L = cwtpp_params(4));
+                else
                     [cwtpeaks,dims,options.mode] = cwtpp(data_select, T0 = options.T0, ite = options.ite, ...
-                    Imin = options.Imin,use_metadata=1,dir=filename);
+                    Imin = options.Imin,Nparticles=option.Nparticles, G = options.G, L = options.L, ...
+                    use_metadata=1,dir=filename);
+                end
             else
-                [cwtpeaks,dims,options.mode] = cwtpp(filename,T0 = options.T0, ite = options.ite, ...
-                    Imin = options.Imin);
+                if options.autoparams
+                    cwtpp_params = infogsearch(filename);
+                    disp(['IT-constrained hyperparameters: ','T0 = ',num2str(options.T0), ',  ','ite = ',num2str(options.ite), ',  ',...
+                        'Imin = ',num2str(cwtpp_params(1)),',  ','Nparticles = ',num2str(cwtpp_params(2)),',  ','G = ',num2str(cwtpp_params(3)),',  ', ...
+                        'L = ',num2str(cwtpp_params(4))])
+                    [cwtpeaks,dims,options.mode] = cwtpp(filename,Imin=cwtpp_params(1),Nparticles = cwtpp_params(2),...
+                        G = cwtpp_params(3), L = cwtpp_params(4));
+                else
+                    [cwtpeaks,dims,options.mode] = cwtpp(filename,T0 = options.T0, ite = options.ite, ...
+                        Imin = options.Imin, Nparticles=option.Nparticles, G = options.G, L = options.L);
+                end
             end
         end
 %% define a global axis (vector in HS data thats ~ mean/median)

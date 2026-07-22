@@ -1,0 +1,76 @@
+function [list_of_peaks,dims, mode] =  cwtpp(filename,options)
+
+arguments
+    filename = 'default'
+    options.T0 {mustBeNumeric} = 1000;
+    options.ite {mustBeNumeric} = 100;
+    options.Nparticles {mustBeNumeric} = 1/2;
+    options.Imin {mustBeNumeric} = 100;
+    options.G {mustBeNumeric} = 3;
+    options.L {mustBeNumeric} = 2;
+    options.use_metadata = 0
+    options.dir = ''
+end
+
+% tic
+if strcmp(filename,'default')
+    [path] = uigetdir();
+    cd (path);
+    files=[dir('*.raw');dir('*.imzml');dir('*.mz5')];
+    filename=files(1).name;
+end
+try
+    [~,file,ext] = fileparts(filename);
+    if strcmp(ext, '.raw')
+        mode = '.raw';
+    elseif strcmp(ext, '.imzML')
+        mode = '.imzml';
+    else
+        mode = '.mz5';
+    end
+catch
+    mode = 'workspace';
+end
+
+
+%% peak detection of files of different formats
+if strcmp(mode, '.raw')
+    disp('loading from raw file(s)')
+    [list_of_peaks, dims] = pp_raw(filename, T0 = options.T0, ite = options.ite, ...
+        Nparticles = options.Nparticles, Imin=options.Imin, G= options.G, L=options.L);
+elseif strcmp(mode, '.imzml')
+    [raw_specs,dims] = load_imzml(filename);
+    [list_of_peaks] = pp_imzml(raw_specs, T0 = options.T0, ite = options.ite, ...
+        Nparticles = options.Nparticles, Imin=options.Imin, G= options.G, L=options.L);
+    disp('loading from raw imzml file(s)')       
+elseif strcmp(mode, 'workspace')
+    disp('loading from workspace')
+    raw_specs = filename;
+    [list_of_peaks] = pp_workspace(raw_specs, T0 = options.T0, ite = options.ite, ...
+        Nparticles = options.Nparticles, Imin=options.Imin, G= options.G, L=options.L);
+elseif strcmp(mode, '.mz5')
+    disp('loading from mz5 file')
+    [list_of_peaks, dims] = pp_mz5(filename, T0 = options.T0, ite = options.ite, ...
+        Nparticles = options.Nparticles, Imin=options.Imin, G= options.G, L=options.L);  
+end
+
+if options.use_metadata == 1
+    [~,file,ext] = fileparts(options.dir);
+    if strcmp(ext,'.raw')
+        mode = '.raw';
+        save([options.dir,'\cwtpeaks'],'list_of_peaks','dims')
+    else
+        mode = '.mz5';
+        save([file,'_cwtpeaks'],'list_of_peaks','dims')
+    end
+else
+    if strcmp(mode,'workspace') == 0
+        if strcmp(mode,'.raw')
+            save([filename,'\cwtpeaks'],'list_of_peaks','dims','-v7.3')
+        else
+
+            save([file,'_cwtpeaks'],'list_of_peaks','dims','-v7.3')
+        end
+    end
+end
+% toc

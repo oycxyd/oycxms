@@ -9,6 +9,7 @@ arguments
     options.G {mustBeNumeric} = 3;
     options.L {mustBeNumeric} = 2;
     options.use_metadata = 0
+    options.autoparams = 1;
     options.dir = ''
 end
 
@@ -32,8 +33,13 @@ catch
     mode = 'workspace';
 end
 
-[list_of_peaks,dims] = pp_mode(filename,mode=mode,T0 = options.T0, ite = options.ite, ...
-    Nparticles = options.Nparticles, Imin=options.Imin, G= options.G, L=options.L);
+if options.autoparams
+    [list_of_peaks,dims] = pp_mode(filename,mode=mode,T0 = options.T0, ite = options.ite, ...
+        Nparticles = options.Nparticles, Imin=options.Imin, G= options.G, L=options.L);
+else
+    [list_of_peaks,dims] = pp_mode(filename,mode=mode,T0 = options.T0, ite = options.ite, ...
+        Nparticles = options.Nparticles, Imin=options.Imin, G= options.G, L=options.L);
+end
 if options.use_metadata == 1
     [~,file,ext] = fileparts(options.dir);
     if strcmp(ext,'.raw')

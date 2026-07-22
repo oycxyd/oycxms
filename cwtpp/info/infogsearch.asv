@@ -1,4 +1,5 @@
 function [cwtpp_params] = infogsearch(filename,nsamples,meta_switch)   
+    filename 
     if nargin < 2
         nsamples = 5;
         meta_switch = 0;
@@ -16,8 +17,6 @@ function [cwtpp_params] = infogsearch(filename,nsamples,meta_switch)
     if length(sample_ind) < nsamples
         nsamples = length(sample_ind);
     end
-
-    disp('optimising hyperparameters...')
     tic
     for m = 1:nsamples
         ind = sample_ind(m);
@@ -63,6 +62,7 @@ function [cwtpp_params] = infogsearch(filename,nsamples,meta_switch)
         
         parfor n = 1:nComb
             % disp(n)
+            disp('optimising hyperparameters...')
             p = params(n,:);
             [cwtpeaks]=cwtpp(cwttest,...
                 G=(p(2)),L=(p(3)),...

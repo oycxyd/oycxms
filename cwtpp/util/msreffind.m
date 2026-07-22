@@ -1,4 +1,4 @@
-function [mzs_output, ms_references] = msreffind(mode, options)
+function [mzs_output, ms_references, ppm_dis_ini] = msreffind(mode, options)
     arguments
         mode (1,:) char
         options.path (1,:) = pwd
@@ -32,6 +32,7 @@ function [mzs_output, ms_references] = msreffind(mode, options)
         elseif strcmp(mode,'recal')
             disp('finding reference with recalibrated data.')
             filenames=[dir('*.raw');dir('*_recal.h5')];
+            % filenames=[dir('*.raw');dir('*_filt.h5')];
             for i = 1:length(filenames)
                 filename = filenames(i).name;
                 [~,~,ext] = fileparts(filename);
@@ -94,7 +95,7 @@ function [mzs_output, ms_references] = msreffind(mode, options)
                 ppm = diff/ms_references(m,1)*10^6;
                 if ppm <= options.threshold
                     [~, ind] = min( abs(mz_raw-mz_raw_p(ind)) );
-                    ms_references(m,n) = ind;
+                    ms_references(m,n) = mz_raw(ind);
                 else
                     ms_references(m,:)=0;
                 end
@@ -102,14 +103,21 @@ function [mzs_output, ms_references] = msreffind(mode, options)
     end
     ms_references(ms_references(:,1)==0,:)=[];
     [~,ia] = unique(ms_references(:,2));ms_references = ms_references(ia,:);
-
-    for i = 2:length(mzs_recal)
+    ms_references = cat(2,ms_references,mean(ms_references,2));
+    
+    ini = zeros(length(mzs_recal),1);
+    for i = 1:length(mzs_recal)
         % disp(i)
         dum = mzs_recal{i};
-        dum(ms_references(:,i)) = ms_references(:,1);
+        [~,dumInd] = ismember(ms_references(:,i), dum);
+        dum(dumInd) = ms_references(:,end);
         mzs_recal{i} = dum;
+        dif = abs(mzs{i}-mzs_recal{i});
+        xs = sqrt(mzs_recal{i});xs = xs(~(dif==0))';dif = dif(~(dif==0))';
+        ini(i)  = (xs' * dif) / (xs' * xs);
         clear dum
     end
     mzs_output(I) = mzs_recal;
+    ppm_dis_ini(I) = ini;
     % ms_references = ms_references(:,1);
 end
