@@ -8,6 +8,9 @@ function [cwtpp_params] = infogsearch(filename,nsamples,meta_switch)
         Sindex = double(h5read(filename,['/SpectrumIndex']));
         Sindex = checkSindex(Sindex);
         [sample_ind] = find(diff(Sindex)==round(median(diff(Sindex))));
+        if isempty(sample_ind)
+            [~,sample_ind] = min(abs(diff(Sindex)-round(median(diff(Sindex)))));
+        end
     catch
         med = median(cellfun(@length, filename));
         [sample_ind] = find((cellfun(@length, filename))==round(med));
