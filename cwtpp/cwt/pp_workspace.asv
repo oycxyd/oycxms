@@ -15,15 +15,13 @@ function [list_of_peaks] = pp_workspace(raw_specs, options)
     
     if options.verbose
         counter1 = parfor_wait(numS, 'Waitbar', false);
-    else
-        counter1 = 'dum';
     end
     
     parfor n = 1:numS
         try
             counter1.Send;
         catch
-            % Do nothing.
+            continue
         end
         spectrum = raw_specs{n}(2,:);
         mz = raw_specs{n}(1,:);

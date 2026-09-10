@@ -10,7 +10,6 @@ arguments
     options.L {mustBeNumeric} = 2;
     options.use_metadata = 0
     options.dir = ''
-    options.verbose {mustBeNumericOrLogical} = true;
 end
 
 % tic
@@ -45,12 +44,10 @@ elseif strcmp(mode, '.imzml')
         Nparticles = options.Nparticles, Imin=options.Imin, G= options.G, L=options.L);
     disp('loading from raw imzml file(s)')       
 elseif strcmp(mode, 'workspace')
-    if options.verbose
-        disp('loading from workspace')
-    end
+    disp('loading from workspace')
     raw_specs = filename;
     [list_of_peaks] = pp_workspace(raw_specs, T0 = options.T0, ite = options.ite, ...
-        Nparticles = options.Nparticles, Imin=options.Imin, G= options.G, L=options.L, verbose=options.verbose);
+        Nparticles = options.Nparticles, Imin=options.Imin, G= options.G, L=options.L, );
 elseif strcmp(mode, '.mz5')
     disp('loading from mz5 file')
     [list_of_peaks, dims] = pp_mz5(filename, T0 = options.T0, ite = options.ite, ...

@@ -250,9 +250,9 @@ end
             case 'Yes'
                 disp([answer ' OK.'])
                 if strcmp(options.mode,'.mz5')
-                    dtwa(dname,'mz5');
+                    mia(dname,'mz5');
                 else
-                    dtwa(dname);
+                    mia(dname);
                 end
             case 'No'
                 disp([answer ' OK.'])
