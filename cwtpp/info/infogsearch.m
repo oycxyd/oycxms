@@ -14,6 +14,9 @@ function [cwtpp_params] = infogsearch(filename,nsamples,meta_switch)
     catch
         med = median(cellfun(@length, filename));
         [sample_ind] = find((cellfun(@length, filename))==round(med));
+        if isempty(sample_ind)
+            [~,sample_ind] = min(abs(cellfun(@length, filename)-round(med)));
+        end
         meta_switch = 1;
     end
     if length(sample_ind) < nsamples

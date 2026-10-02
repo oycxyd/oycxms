@@ -36,6 +36,17 @@ end
         metadata = readcell('metadata.csv');
         use_metadata = 1;
         disp('metadata found in folder.')
+        fprintf("Using metadata for scan selection.\n");
+        if options.autoparams
+            selected = sort(randperm(length(filenames), round(length(filenames)*0.1)));
+            data_sample = {};
+            for s = 1:length(selected)
+                filename = filenames(selected(s)).name;
+                data_s = loadMetadataScans(filename, metadata);
+                data_sample = cat(1,data_sample,data_s);
+            end
+            cwtpp_params = infogsearch(data_sample);
+        end
     else
         use_metadata = 0;
     end
@@ -45,40 +56,8 @@ end
         disp(['preprocessing file ',num2str(n),' of ',num2str(length(filenames))])
     try
         filename = filenames(n).name;
-        [~,~,ext] = fileparts(filename);
         if use_metadata == 1
-            disp('using metadata!')
-            meta_i = find(contains(metadata(:,2),filename));
-            data_select = {};
-            for p = 1:length(meta_i)
-                scans = cell2mat([metadata(meta_i(p),3),metadata(meta_i(p),4)]);             
-                for q = scans(1):scans(2)
-                    if strcmp(ext, '.raw')
-                        [mz,spectrum] = readraw2spec(filename,q);
-                    else
-                        options.mode = '.mz5';
-                        Sindex = double(h5read(filename,['/SpectrumIndex']));
-                        Sindex = checkSindex(Sindex);
-                        if q == 1
-                            spectrum = h5read(filename,['/SpectrumIntensity'],1,double(Sindex(q)))';
-                            mz = h5read(filename,['/SpectrumMZ'],1,double(Sindex(q)))';
-                        else
-                            try
-                                spectrum = h5read(filename,['/SpectrumIntensity'],double(Sindex(q-1))+1,double(Sindex(q)-Sindex(q-1)))';
-                                mz = h5read(filename,['/SpectrumMZ'],double(Sindex(q-1))+1,double(Sindex(q)-Sindex(q-1)))';
-                            catch
-                                spectrum = h5read(filename,['/SpectrumIntensity'],double(Sindex(q-1))+1,1)';
-                                mz = h5read(filename,['/SpectrumMZ'],double(Sindex(q-1))+1,1)';
-                            end
-                        end
-                        for i=2:length(mz)
-                            mz(i) = mz(i-1)+mz(i);
-                        end
-                    end
-                    scan = cat(1,mz,spectrum);
-                    data_select = cat(1,data_select,scan);
-                end
-            end
+            data_select = loadMetadataScans(filename, metadata);
         end
     catch
         if iscell(filenames)
@@ -105,17 +84,16 @@ end
             end
             
         else
-            if use_metadata == 1
+            if use_metadata
                 if options.autoparams
-                    cwtpp_params = infogsearch(data_select);
                     disp(['IT-constrained hyperparameters: ','T0 = ',num2str(options.T0), ',  ','ite = ',num2str(options.ite), ',  ',...
                         'Imin = ',num2str(cwtpp_params(1)),',  ','Nparticles = ',num2str(cwtpp_params(2)),',  ','G = ',num2str(cwtpp_params(3)),',  ', ...
                         'L = ',num2str(cwtpp_params(4))])
-                    [cwtpeaks,dims,options.mode] = cwtpp(data_select,use_metadata=1,dir=filename,Imin=cwtpp_params(1),Nparticles = cwtpp_params(2),...
+                    [cwtpeaks,~,options.mode] = cwtpp(data_select,use_metadata=1,dir=filename,Imin=cwtpp_params(1),Nparticles = cwtpp_params(2),...
                         G = cwtpp_params(3), L = cwtpp_params(4));
                 else
                     [cwtpeaks,dims,options.mode] = cwtpp(data_select, T0 = options.T0, ite = options.ite, ...
-                    Imin = options.Imin,Nparticles=option.Nparticles, G = options.G, L = options.L, ...
+                    Imin = options.Imin,Nparticles=options.Nparticles, G = options.G, L = options.L, ...
                     use_metadata=1,dir=filename);
                 end
             else

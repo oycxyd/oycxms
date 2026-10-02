@@ -51,6 +51,7 @@ elseif strcmp(mode, 'workspace')
     raw_specs = filename;
     [list_of_peaks] = pp_workspace(raw_specs, T0 = options.T0, ite = options.ite, ...
         Nparticles = options.Nparticles, Imin=options.Imin, G= options.G, L=options.L, verbose=options.verbose);
+    dims = [];
 elseif strcmp(mode, '.mz5')
     disp('loading from mz5 file')
     [list_of_peaks, dims] = pp_mz5(filename, T0 = options.T0, ite = options.ite, ...
@@ -71,7 +72,6 @@ else
         if strcmp(mode,'.raw')
             save([filename,'\cwtpeaks'],'list_of_peaks','dims','-v7.3')
         else
-
             save([file,'_cwtpeaks'],'list_of_peaks','dims','-v7.3')
         end
     end

@@ -19,7 +19,7 @@ end
 try
     info=h5info(filename);
     datasets=info.Datasets;
-    if isempty(datasets)==1
+    if isempty(datasets)
         %just for the old GUI, which saves data into Groups
          warning('Data not found in Datasets, will try Groups');
          datasets=info.Groups(2).Datasets;
